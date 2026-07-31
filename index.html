@@ -178,7 +178,6 @@
             margin-top: 4px;
         }
 
-        /* Specific Cards Styling */
         .card-income .card-icon { background: var(--income-bg); color: var(--income); }
         .card-expense .card-icon { background: var(--expense-bg); color: var(--expense); }
 
@@ -404,30 +403,11 @@
         .btn-t-action:hover { opacity: 0.8; }
         .btn-t-action.edit:hover { color: var(--primary); }
         .btn-t-action.delete:hover { color: var(--expense); background: var(--expense-bg); }
-
-        /* Loading Spinner Overlay */
-        .loading-overlay {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            border-radius: 20px;
-        }
-        [data-theme="dark"] .loading-overlay { background: rgba(15, 23, 42, 0.7); }
-        .loading-overlay.active { display: flex; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- Spinner -->
-    <div class="loading-overlay" id="loadingSpinner">
-        <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
-    </div>
-
     <!-- Header -->
     <div class="header">
         <div class="brand">
@@ -435,7 +415,6 @@
             <div class="brand-title">កាបូបខ្ញុំ- MyWallet</div>
         </div>
         <div class="header-actions">
-            <div class="header-action" onclick="fetchDataFromSheet()" title="ធ្វើបច្ចុប្បន្នភាពទិន្នន័យ (Refresh)"><i class="fa-solid fa-rotate-right"></i></div>
             <div class="header-action" id="themeToggleBtn" onclick="toggleTheme()" title="ប្តូរពណ៌ទម្រង់ (Dark/Light Mode)"><i class="fa-solid fa-moon" id="themeIcon"></i></div>
         </div>
     </div>
@@ -569,17 +548,11 @@
 </div>
 
 <script>
-    // Web App URL ទទួលបានពី Google Apps Script Deployment របស់អ្នក
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYiVykwDPs71kkhWX5pvAi-cL3bHwvOedY6GkgBb8VwRWMYkWHQtPuowlayNjxNd_3/exec";
-
-    let transactions = [];
+    // រក្សាទុកទិន្នន័យនៅក្នុង LocalStorage
+    let transactions = JSON.parse(localStorage.getItem('sheet_tracker_data')) || [];
     let currentType = 'income';
     let incomeFilter = 'day';
     let expenseFilter = 'day';
-
-    function showLoading(show) {
-        document.getElementById('loadingSpinner').classList.toggle('active', show);
-    }
 
     function initTheme() {
         const savedTheme = localStorage.getItem('sheet_tracker_theme') || 'light';
@@ -613,22 +586,6 @@
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         document.getElementById('datetime').value = now.toISOString().slice(0,16);
-    }
-
-    // ទាញយកទិន្នន័យពី Google Sheets មកបង្ហាញ
-    async function fetchDataFromSheet() {
-        showLoading(true);
-        try {
-            const res = await fetch(GOOGLE_SCRIPT_URL);
-            const data = await res.json();
-            transactions = data.reverse(); // យកប្រតិបត្តិការថ្មីៗមកបង្ហាញលើគេ
-            updateUI();
-        } catch (err) {
-            console.error(err);
-            alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Google Sheet");
-        } finally {
-            showLoading(false);
-        }
     }
 
     function openModal(type) {
@@ -683,7 +640,7 @@
         document.getElementById('editId').value = '';
     }
 
-    async function handleSave(e) {
+    function handleSave(e) {
         e.preventDefault();
 
         const usd = parseFloat(document.getElementById('amountUSD').value) || 0;
@@ -697,79 +654,50 @@
             return;
         }
 
-        const id = editId ? parseInt(editId) : Date.now();
-        const action = editId ? 'EDIT' : 'ADD';
-
-        const payload = {
-            action: action,
-            id: id,
-            type: currentType,
-            usd: usd,
-            khr: khr,
-            desc: desc,
-            datetime: datetime
-        };
-
-        showLoading(true);
-        closeModal();
-
-        try {
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            
-            // Sync ទិន្នន័យឡើងវិញបន្ទាប់ពីផ្ញើទៅ Google Sheet រួច
-            setTimeout(fetchDataFromSheet, 1500);
-        } catch (err) {
-            console.error(err);
-            alert("មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ");
-            showLoading(false);
-        }
-    }
-
-    async function deleteTransaction(id) {
-        if(confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះមែនទេ?')) {
-            showLoading(true);
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "DELETE", id: id })
-                });
-                setTimeout(fetchDataFromSheet, 1500);
-            } catch (err) {
-                console.error(err);
-                alert("មានបញ្ហាក្នុងការលុបទិន្នន័យ");
-                showLoading(false);
+        if(editId) {
+            const index = transactions.findIndex(item => item.id == editId);
+            if(index !== -1) {
+                transactions[index].type = currentType;
+                transactions[index].usd = usd;
+                transactions[index].khr = khr;
+                transactions[index].desc = desc;
+                transactions[index].datetime = datetime;
             }
+        } else {
+            const newEntry = {
+                id: Date.now(),
+                type: currentType,
+                usd: usd,
+                khr: khr,
+                desc: desc,
+                datetime: datetime
+            };
+            transactions.unshift(newEntry);
+        }
+
+        localStorage.setItem('sheet_tracker_data', JSON.stringify(transactions));
+        updateUI();
+        closeModal();
+    }
+
+    function deleteTransaction(id) {
+        if(confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះមែនទេ?')) {
+            transactions = transactions.filter(t => t.id !== id);
+            localStorage.setItem('sheet_tracker_data', JSON.stringify(transactions));
+            updateUI();
         }
     }
 
-    async function clearAllTransactions() {
+    function clearAllTransactions() {
         if(transactions.length === 0) {
             alert('គ្មានប្រតិបត្តិការសម្រាប់លុបទេ');
             return;
         }
 
         if(confirm('តើអ្នកពិតជាចង់យល់ព្រមលុបប្រតិបត្តិការចំណូលចំណាយទាំងអស់មែនទេ?')) {
-            showLoading(true);
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "CLEAR_ALL" })
-                });
-                setTimeout(fetchDataFromSheet, 1500);
-            } catch (err) {
-                console.error(err);
-                alert("មានបញ្ហាក្នុងការសម្អាតទិន្នន័យ");
-                showLoading(false);
-            }
+            transactions = [];
+            localStorage.removeItem('sheet_tracker_data');
+            updateUI();
         }
     }
 
@@ -956,7 +884,7 @@
 
     // Initial Load
     initTheme();
-    fetchDataFromSheet();
+    updateUI();
 </script>
 
 </body>
