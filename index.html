@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>កាបូបខ្ញុំ- MyWallet - កត់ត្រាចំណូលចំណាយ</title>
+    <!-- Font Khmer and FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF Library for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --income: #10B981;
+            --income-bg: #E6F4EA;
+            --expense: #EF4444;
+            --expense-bg: #FCE8E6;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #1E293B;
+            --text-sub: #64748B;
+            --border-color: #F1F5F9;
+            --input-bg: #FFFFFF;
+            --filter-bg: #F1F5F9;
+            --filter-tab-active-bg: #FFFFFF;
+            --modal-bg: #FFFFFF;
+        }
+
+        [data-theme="dark"] {
+            --primary: #6366F1;
+            --income: #34D399;
+            --income-bg: rgba(16, 185, 129, 0.15);
+            --expense: #F87171;
+            --expense-bg: rgba(239, 68, 68, 0.15);
+            --bg: #0F172A;
+            --card-bg: #1E293B;
+            --text-main: #F1F5F9;
+            --text-sub: #94A3B8;
+            --border-color: #334155;
+            --input-bg: #0F172A;
+            --filter-bg: #334155;
+            --filter-tab-active-bg: #475569;
+            --modal-bg: #1E293B;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kantumruy Pro', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            transition: background-color 0.3s;
+        }
+
+        /* Header UI matching design */
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .brand-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-action {
+            color: var(--text-sub);
+            font-size: 18px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--filter-bg);
+            transition: background 0.2s;
+        }
+        .header-action:hover {
+            opacity: 0.8;
+        }
+
+        /* Main Content & Cards */
+        .content {
+            padding: 0 20px 100px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            position: relative;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .card-title {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+        }
+
+        .card-sub-title {
+            font-size: 11px;
+            color: var(--text-sub);
+            opacity: 0.8;
+        }
+
+        .card-amount {
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* Specific Cards Styling */
+        .card-income .card-icon { background: var(--income-bg); color: var(--income); }
+        .card-income .card-badge { background: var(--income-bg); color: var(--income); }
+        .card-income .card-amount { color: var(--text-main); }
+
+        .card-expense .card-icon { background: var(--expense-bg); color: var(--expense); }
+        .card-expense .card-badge { background: var(--expense-bg); color: var(--expense); }
+        .card-expense .card-amount { color: var(--text-main); }
+
+        .card-balance {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+        .card-balance .card-icon { background: rgba(255,255,255,0.2); color: white; }
+        .card-balance .card-title, .card-balance .card-sub-title { color: rgba(255,255,255,0.8); }
+        .card-balance .card-amount { color: white; }
+
+        /* Filter Tabs inside Cards */
+        .filter-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--filter-bg);
+            padding: 3px;
+            border-radius: 10px;
+        }
+
+        .filter-tab {
+            background: transparent;
+            border: none;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-sub);
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-tab.active {
+            background: var(--filter-tab-active-bg);
+            color: var(--text-main);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Currency Layout */
+        .currency-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .amount-khr {
+            font-size: 31.2px; /* 30% larger than 24px card-amount */
+            font-weight: 700;
+            opacity: 0.95;
+            line-height: 1;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-action {
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            gap: 2px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+
+        .btn-action:active { transform: scale(0.98); }
+        .btn-action span { font-size: 11px; font-weight: 400; opacity: 0.9; }
+
+        .btn-income { background: var(--income); color: #fff; }
+        .btn-expense { background: var(--expense); color: #fff; }
+
+        /* Download Section & Clear All */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .header-actions-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-download {
+            background: var(--filter-bg);
+            color: var(--text-main);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+        .btn-download:hover { opacity: 0.8; }
+
+        .btn-clear-all {
+            background: var(--expense-bg);
+            color: var(--expense);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Modal / Form Slide-up */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--modal-bg);
+            color: var(--text-main);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            animation: slideUp 0.3s ease-out;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+        }
+
+        .form-group label span { font-size: 11px; opacity: 0.8; }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-main);
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .form-control:focus { border-color: var(--primary); }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* List items */
+        .transaction-list {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .t-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .t-info div:first-child { font-weight: 600; font-size: 14px; color: var(--text-main); }
+        .t-info div:last-child { font-size: 11px; color: var(--text-sub); }
+        
+        .t-right-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .t-amount { font-weight: 700; text-align: right; }
+        .t-amount.income { color: var(--income); }
+        .t-amount.expense { color: var(--expense); }
+
+        .t-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-t-action {
+            background: var(--filter-bg);
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            transition: background 0.2s;
+        }
+        .btn-t-action:hover { opacity: 0.8; }
+        .btn-t-action.edit:hover { color: var(--primary); }
+        .btn-t-action.delete:hover { color: var(--expense); background: var(--expense-bg); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-wallet"></i></div>
+            <div class="brand-title">កាបូបខ្ញុំ- MyWallet</div>
+        </div>
+        <div class="header-actions">
+            <div class="header-action" id="themeToggleBtn" onclick="toggleTheme()" title="ប្តូរពណ៌ទម្រង់ (Dark/Light Mode)"><i class="fa-solid fa-moon" id="themeIcon"></i></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        
+        <!-- Total Income Card -->
+        <div class="card card-income">
+            <div class="card-header">
+                <div class="card-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="setFilter('income', 'day', event)">ថ្ងៃ</button>
+                    <button class="filter-tab" onclick="setFilter('income', 'week', event)">សប្តាហ៍</button>
+                    <button class="filter-tab" onclick="setFilter('income', 'month', event)">ខែ</button>
+                    <button class="filter-tab" onclick="setFilter('income', 'year', event)">ឆ្នាំ</button>
+                    <button class="filter-tab" onclick="setFilter('income', 'all', event)">សរុប</button>
+                </div>
+            </div>
+            <div class="card-title">ចំណូលសរុប</div>
+            <div class="card-sub-title" id="income-filter-subtitle">Total Income (Today)</div>
+            <div class="currency-wrap">
+                <div class="card-amount" id="total-income-usd">$0.00</div>
+                <div class="amount-khr" id="total-income-khr">0 ៛</div>
+            </div>
+        </div>
+
+        <!-- Total Expense Card -->
+        <div class="card card-expense">
+            <div class="card-header">
+                <div class="card-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="setFilter('expense', 'day', event)">ថ្ងៃ</button>
+                    <button class="filter-tab" onclick="setFilter('expense', 'week', event)">សប្តាហ៍</button>
+                    <button class="filter-tab" onclick="setFilter('expense', 'month', event)">ខែ</button>
+                    <button class="filter-tab" onclick="setFilter('expense', 'year', event)">ឆ្នាំ</button>
+                    <button class="filter-tab" onclick="setFilter('expense', 'all', event)">សរុប</button>
+                </div>
+            </div>
+            <div class="card-title">ចំណាយសរុប</div>
+            <div class="card-sub-title" id="expense-filter-subtitle">Total Expenses (Today)</div>
+            <div class="currency-wrap">
+                <div class="card-amount" id="total-expense-usd">$0.00</div>
+                <div class="amount-khr" id="total-expense-khr">0 ៛</div>
+            </div>
+        </div>
+
+        <!-- Current Balance Card -->
+        <div class="card card-balance">
+            <div class="card-header">
+                <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+            </div>
+            <div class="card-title">ប្រាក់នៅសល់សរុប</div>
+            <div class="card-sub-title">Overall Current Balance</div>
+            <div class="currency-wrap">
+                <div class="card-amount" id="balance-usd">$0.00</div>
+                <div class="amount-khr" id="balance-khr">0 ៛</div>
+            </div>
+        </div>
+
+        <!-- Two Big Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn-action btn-income" onclick="openModal('income')">
+                <div>+ ចំណូល</div>
+                <span>+ Income</span>
+            </button>
+            <button class="btn-action btn-expense" onclick="openModal('expense')">
+                <div>- ចំណាយ</div>
+                <span>- Expense</span>
+            </button>
+        </div>
+
+        <!-- Transactions Header & Export -->
+        <div class="history-header">
+            <div>
+                <b style="font-size: 15px;">ប្រតិបត្តិការថ្មីៗ</b>
+                <div style="font-size: 11px; color: var(--text-sub);">Recent Transactions</div>
+            </div>
+            <div class="header-actions-group">
+                <button class="btn-clear-all" onclick="clearAllTransactions()">
+                    <i class="fa-solid fa-trash-can"></i> សម្អាតទាំងអស់
+                </button>
+                <button class="btn-download" onclick="downloadPDF()">
+                    <i class="fa-solid fa-file-pdf"></i> ទាញយកប្រតិបត្តិការ
+                </button>
+            </div>
+        </div>
+
+        <!-- Transaction List -->
+        <div class="transaction-list" id="transaction-list">
+            <!-- Items injected by JS -->
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Form -->
+<div class="modal" id="entryModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <h3 id="modalTitle">បញ្ជូលទិន្នន័យ</h3>
+                <span id="modalSubTitle" style="font-size: 12px; color: var(--text-sub);">Add Entry</span>
+            </div>
+            <i class="fa-solid fa-xmark" style="font-size: 20px; cursor: pointer;" onclick="closeModal()"></i>
+        </div>
+
+        <form id="trackerForm" onsubmit="handleSave(event)">
+            <input type="hidden" id="type">
+            <input type="hidden" id="editId">
+            
+            <div class="form-group">
+                <label>ថ្ងៃខែឆ្នាំ <span>/ Date</span></label>
+                <input type="datetime-local" id="datetime" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label>ចំនួនទឹកប្រាក់ <span>/ Amount</span></label>
+                <div class="grid-2">
+                    <input type="number" step="0.01" id="amountUSD" class="form-control" placeholder="0.00 $">
+                    <input type="number" id="amountKHR" class="form-control" placeholder="0 ៛">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>បរិយាយ <span>/ Description</span></label>
+                <input type="text" id="description" class="form-control" placeholder="ឧទាហរណ៍៖ ទិញបាយ, ប្រាក់ខែ..." required>
+            </div>
+
+            <button type="submit" class="btn-save" id="saveBtnText">រក្សាទុក / Save</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // App State stored in LocalStorage
+    let transactions = JSON.parse(localStorage.getItem('sheet_tracker_data')) || [];
+    let currentType = 'income';
+
+    // Filter states ('day', 'week', 'month', 'year', 'all')
+    let incomeFilter = 'day';
+    let expenseFilter = 'day';
+
+    // Dark Mode Initialization & Toggle
+    function initTheme() {
+        const savedTheme = localStorage.getItem('sheet_tracker_theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            document.getElementById('themeIcon').className = 'fa-solid fa-moon';
+        }
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const icon = document.getElementById('themeIcon');
+        if (currentTheme === 'dark') {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('sheet_tracker_theme', 'light');
+            icon.className = 'fa-solid fa-moon';
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('sheet_tracker_theme', 'dark');
+            icon.className = 'fa-solid fa-sun';
+        }
+    }
+
+    // Format currency
+    const formatUSD = (val) => '$' + Number(val).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const formatKHR = (val) => Number(val).toLocaleString('en-US') + ' ៛';
+
+    // Set Default Datetime to Now (Local Time)
+    function setNowDateTime() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('datetime').value = now.toISOString().slice(0,16);
+    }
+
+    function openModal(type) {
+        currentType = type;
+        document.getElementById('type').value = type;
+        document.getElementById('editId').value = '';
+        setNowDateTime();
+        
+        const title = document.getElementById('modalTitle');
+        document.getElementById('saveBtnText').innerText = 'រក្សាទុក / Save';
+
+        if(type === 'income') {
+            title.innerText = 'បញ្ជូលចំណូល / Add Income';
+            title.style.color = 'var(--income)';
+        } else {
+            title.innerText = 'បញ្ជូលចំណាយ / Add Expense';
+            title.style.color = 'var(--expense)';
+        }
+
+        document.getElementById('entryModal').classList.add('active');
+    }
+
+    function openEditModal(id) {
+        const t = transactions.find(item => item.id === id);
+        if(!t) return;
+
+        currentType = t.type;
+        document.getElementById('type').value = t.type;
+        document.getElementById('editId').value = t.id;
+        document.getElementById('amountUSD').value = t.usd > 0 ? t.usd : '';
+        document.getElementById('amountKHR').value = t.khr > 0 ? t.khr : '';
+        document.getElementById('description').value = t.desc;
+        
+        if(t.datetime) {
+            document.getElementById('datetime').value = t.datetime;
+        }
+
+        const title = document.getElementById('modalTitle');
+        document.getElementById('saveBtnText').innerText = 'កែសម្រួល / Update';
+
+        if(t.type === 'income') {
+            title.innerText = 'កែសម្រួលចំណូល / Edit Income';
+            title.style.color = 'var(--income)';
+        } else {
+            title.innerText = 'កែសម្រួលចំណាយ / Edit Expense';
+            title.style.color = 'var(--expense)';
+        }
+
+        document.getElementById('entryModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('entryModal').classList.remove('active');
+        document.getElementById('trackerForm').reset();
+        document.getElementById('editId').value = '';
+    }
+
+    function handleSave(e) {
+        e.preventDefault();
+
+        const usd = parseFloat(document.getElementById('amountUSD').value) || 0;
+        const khr = parseFloat(document.getElementById('amountKHR').value) || 0;
+        const desc = document.getElementById('description').value;
+        const datetime = document.getElementById('datetime').value;
+        const editId = document.getElementById('editId').value;
+
+        if (usd === 0 && khr === 0) {
+            alert('សូមបញ្ជូលទឹកប្រាក់យ៉ាងហោចណាស់មួយ (ដុល្លារ ឬ រៀល)');
+            return;
+        }
+
+        if(editId) {
+            const index = transactions.findIndex(item => item.id == editId);
+            if(index !== -1) {
+                transactions[index].type = currentType;
+                transactions[index].usd = usd;
+                transactions[index].khr = khr;
+                transactions[index].desc = desc;
+                transactions[index].datetime = datetime;
+            }
+        } else {
+            const newEntry = {
+                id: Date.now(),
+                type: currentType,
+                usd: usd,
+                khr: khr,
+                desc: desc,
+                datetime: datetime
+            };
+            transactions.unshift(newEntry);
+        }
+
+        localStorage.setItem('sheet_tracker_data', JSON.stringify(transactions));
+        updateUI();
+        closeModal();
+    }
+
+    // Direct Delete Function for Trash Button
+    function deleteTransaction(id) {
+        if(confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះមែនទេ?')) {
+            transactions = transactions.filter(t => t.id !== id);
+            localStorage.setItem('sheet_tracker_data', JSON.stringify(transactions));
+            updateUI();
+        }
+    }
+
+    // Clear All Transactions with Confirmation
+    function clearAllTransactions() {
+        if(transactions.length === 0) {
+            alert('គ្មានប្រតិបត្តិការសម្រាប់លុបទេ');
+            return;
+        }
+
+        if(confirm('តើអ្នកពិតជាចង់យល់ព្រមលុបប្រតិបត្តិការចំណូលចំណាយទាំងអស់មែនទេ?')) {
+            transactions = [];
+            localStorage.removeItem('sheet_tracker_data');
+            updateUI();
+        }
+    }
+
+    function setFilter(type, period, event) {
+        const buttons = event.currentTarget.parentElement.querySelectorAll('.filter-tab');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        if (type === 'income') {
+            incomeFilter = period;
+        } else {
+            expenseFilter = period;
+        }
+        updateUI();
+    }
+
+    function checkPeriodMatch(itemDateStr, period) {
+        const itemDate = new Date(itemDateStr);
+        const now = new Date();
+
+        if (period === 'day') {
+            return itemDate.getFullYear() === now.getFullYear() &&
+                   itemDate.getMonth() === now.getMonth() &&
+                   itemDate.getDate() === now.getDate();
+        } else if (period === 'week') {
+            const firstDayOfWeek = new Date(now);
+            firstDayOfWeek.setDate(now.getDate() - now.getDay());
+            firstDayOfWeek.setHours(0,0,0,0);
+            return itemDate >= firstDayOfWeek;
+        } else if (period === 'month') {
+            return itemDate.getFullYear() === now.getFullYear() &&
+                   itemDate.getMonth() === now.getMonth();
+        } else if (period === 'year') {
+            return itemDate.getFullYear() === now.getFullYear();
+        }
+        return true; // 'all'
+    }
+
+    function updateUI() {
+        let totalIncUSD = 0, totalIncKHR = 0;
+        let totalExpUSD = 0, totalExpKHR = 0;
+
+        let filteredIncUSD = 0, filteredIncKHR = 0;
+        let filteredExpUSD = 0, filteredExpKHR = 0;
+
+        const listContainer = document.getElementById('transaction-list');
+        listContainer.innerHTML = '';
+
+        transactions.forEach(t => {
+            if(t.type === 'income') {
+                totalIncUSD += t.usd;
+                totalIncKHR += t.khr;
+                if(checkPeriodMatch(t.datetime, incomeFilter)) {
+                    filteredIncUSD += t.usd;
+                    filteredIncKHR += t.khr;
+                }
+            } else {
+                totalExpUSD += t.usd;
+                totalExpKHR += t.khr;
+                if(checkPeriodMatch(t.datetime, expenseFilter)) {
+                    filteredExpUSD += t.usd;
+                    filteredExpKHR += t.khr;
+                }
+            }
+
+            // Render List Item
+            const dateStr = new Date(t.datetime).toLocaleString('km-KH', { dateStyle: 'short', timeStyle: 'short' });
+            const itemHtml = `
+                <div class="t-item">
+                    <div class="t-info">
+                        <div>${t.desc}</div>
+                        <div>${dateStr}</div>
+                    </div>
+                    <div class="t-right-group">
+                        <div class="t-amount ${t.type}">
+                            ${t.type === 'income' ? '+' : '-'}${t.usd > 0 ? formatUSD(t.usd) : ''}
+                            ${t.usd > 0 && t.khr > 0 ? '<br>' : ''}
+                            ${t.khr > 0 ? formatKHR(t.khr) : ''}
+                        </div>
+                        <div class="t-actions">
+                            <button class="btn-t-action edit" onclick="openEditModal(${t.id})" title="កែសម្រួល"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-t-action delete" onclick="deleteTransaction(${t.id})" title="លុប"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            listContainer.innerHTML += itemHtml;
+        });
+
+        // Update Filtered Subtitles & Values
+        const periodLabels = { 'day': 'Today', 'week': 'This Week', 'month': 'This Month', 'year': 'This Year', 'all': 'All Time' };
+        
+        document.getElementById('income-filter-subtitle').innerText = `Total Income (${periodLabels[incomeFilter]})`;
+        document.getElementById('total-income-usd').innerText = formatUSD(filteredIncUSD);
+        document.getElementById('total-income-khr').innerText = formatKHR(filteredIncKHR);
+
+        document.getElementById('expense-filter-subtitle').innerText = `Total Expenses (${periodLabels[expenseFilter]})`;
+        document.getElementById('total-expense-usd').innerText = formatUSD(filteredExpUSD);
+        document.getElementById('total-expense-khr').innerText = formatKHR(filteredExpKHR);
+
+        // Balance
+        document.getElementById('balance-usd').innerText = formatUSD(totalIncUSD - totalExpUSD);
+        document.getElementById('balance-khr').innerText = formatKHR(totalIncKHR - totalExpKHR);
+    }
+
+    // Download Data as PDF using jsPDF (Clean English format to prevent encoding errors)
+    function downloadPDF() {
+        if(transactions.length === 0) {
+            alert('មិនទាន់មានទិន្នន័យសម្រាប់ទាញយកជា PDF ទេ');
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Title
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("MyWallet - Transaction Report", 14, 20);
+
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Generated Date: ${new Date().toLocaleString()}`, 14, 28);
+
+        let y = 40;
+        doc.setFontSize(11);
+        doc.setFont("Helvetica", "bold");
+        doc.text("Date", 14, y);
+        doc.text("Type", 55, y);
+        doc.text("Description", 85, y);
+        doc.text("Amount", 140, y);
+
+        doc.line(14, y + 2, 196, y + 2);
+        y += 10;
+
+        let totalIncUSD = 0, totalIncKHR = 0;
+        let totalExpUSD = 0, totalExpKHR = 0;
+
+        doc.setFont("Helvetica", "normal");
+        transactions.forEach((t) => {
+            if(t.type === 'income') {
+                totalIncUSD += t.usd;
+                totalIncKHR += t.khr;
+            } else {
+                totalExpUSD += t.usd;
+                totalExpKHR += t.khr;
+            }
+
+            if (y > 260) {
+                doc.addPage();
+                y = 20;
+            }
+
+            const typeText = t.type === 'income' ? 'Income' : 'Expense';
+            const dateStr = new Date(t.datetime).toLocaleString();
+            let amountStr = '';
+            if(t.usd > 0) amountStr += `$${t.usd.toFixed(2)} `;
+            if(t.khr > 0) amountStr += `${t.khr.toLocaleString()} Riels`;
+
+            doc.text(dateStr, 14, y);
+            doc.text(typeText, 55, y);
+            doc.text(t.desc || '', 85, y);
+            doc.text(amountStr, 140, y);
+
+            y += 10;
+        });
+
+        // Summary Section at the bottom
+        y += 5;
+        if (y > 240) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.line(14, y, 196, y);
+        y += 8;
+
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(12);
+        doc.text("Summary Report", 14, y);
+        y += 8;
+
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Total Income: $${totalIncUSD.toFixed(2)} / ${totalIncKHR.toLocaleString()} Riels`, 14, y);
+        y += 6;
+        doc.text(`Total Expenses: $${totalExpUSD.toFixed(2)} / ${totalExpKHR.toLocaleString()} Riels`, 14, y);
+        y += 6;
+        doc.text(`Net Balance: $${(totalIncUSD - totalExpUSD).toFixed(2)} / ${(totalIncKHR - totalExpKHR).toLocaleString()} Riels`, 14, y);
+
+        doc.save(`MyWallet_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+    }
+
+    // Initial Load
+    initTheme();
+    updateUI();
+</script>
+
+</body>
+</html>
