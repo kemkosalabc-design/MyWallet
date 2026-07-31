@@ -73,7 +73,7 @@
             transition: background-color 0.3s;
         }
 
-        /* Header UI matching design */
+        /* Header UI */
         .header {
             padding: 20px;
             display: flex;
@@ -124,9 +124,7 @@
             background: var(--filter-bg);
             transition: background 0.2s;
         }
-        .header-action:hover {
-            opacity: 0.8;
-        }
+        .header-action:hover { opacity: 0.8; }
 
         /* Main Content & Cards */
         .content {
@@ -162,13 +160,6 @@
             justify-content: center;
         }
 
-        .card-badge {
-            font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
         .card-title {
             font-size: 13px;
             color: var(--text-sub);
@@ -189,12 +180,7 @@
 
         /* Specific Cards Styling */
         .card-income .card-icon { background: var(--income-bg); color: var(--income); }
-        .card-income .card-badge { background: var(--income-bg); color: var(--income); }
-        .card-income .card-amount { color: var(--text-main); }
-
         .card-expense .card-icon { background: var(--expense-bg); color: var(--expense); }
-        .card-expense .card-badge { background: var(--expense-bg); color: var(--expense); }
-        .card-expense .card-amount { color: var(--text-main); }
 
         .card-balance {
             background: var(--primary);
@@ -205,7 +191,7 @@
         .card-balance .card-title, .card-balance .card-sub-title { color: rgba(255,255,255,0.8); }
         .card-balance .card-amount { color: white; }
 
-        /* Filter Tabs inside Cards */
+        /* Filter Tabs */
         .filter-tabs {
             display: flex;
             gap: 4px;
@@ -240,7 +226,7 @@
         }
 
         .amount-khr {
-            font-size: 31.2px; /* 30% larger than 24px card-amount */
+            font-size: 31.2px;
             font-weight: 700;
             opacity: 0.95;
             line-height: 1;
@@ -274,8 +260,8 @@
         .btn-action:active { transform: scale(0.98); }
         .btn-action span { font-size: 11px; font-weight: 400; opacity: 0.9; }
 
-        .btn-income { background: var(--income); color: #fff; }
-        .btn-expense { background: var(--expense); color: #fff; }
+        .btn-income { background: var(--income); }
+        .btn-expense { background: var(--expense); }
 
         /* Download Section & Clear All */
         .history-header {
@@ -291,34 +277,22 @@
             align-items: center;
         }
 
-        .btn-download {
-            background: var(--filter-bg);
-            color: var(--text-main);
+        .btn-download, .btn-clear-all {
             border: none;
             padding: 8px 12px;
             border-radius: 8px;
             font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 6px;
-            font-weight: 600;
         }
+
+        .btn-download { background: var(--filter-bg); color: var(--text-main); }
         .btn-download:hover { opacity: 0.8; }
 
-        .btn-clear-all {
-            background: var(--expense-bg);
-            color: var(--expense);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .btn-clear-all { background: var(--expense-bg); color: var(--expense); }
 
         /* Modal / Form Slide-up */
         .modal {
@@ -356,17 +330,8 @@
             margin-bottom: 20px;
         }
 
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-sub);
-            margin-bottom: 6px;
-        }
-
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
         .form-group label span { font-size: 11px; opacity: 0.8; }
 
         .form-control {
@@ -382,12 +347,7 @@
         }
 
         .form-control:focus { border-color: var(--primary); }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         .btn-save {
             width: 100%;
@@ -421,21 +381,12 @@
         .t-info div:first-child { font-weight: 600; font-size: 14px; color: var(--text-main); }
         .t-info div:last-child { font-size: 11px; color: var(--text-sub); }
         
-        .t-right-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .t-right-group { display: flex; align-items: center; gap: 10px; }
         .t-amount { font-weight: 700; text-align: right; }
         .t-amount.income { color: var(--income); }
         .t-amount.expense { color: var(--expense); }
 
-        .t-actions {
-            display: flex;
-            gap: 4px;
-        }
-
+        .t-actions { display: flex; gap: 4px; }
         .btn-t-action {
             background: var(--filter-bg);
             border: none;
@@ -453,11 +404,30 @@
         .btn-t-action:hover { opacity: 0.8; }
         .btn-t-action.edit:hover { color: var(--primary); }
         .btn-t-action.delete:hover { color: var(--expense); background: var(--expense-bg); }
+
+        /* Loading Spinner Overlay */
+        .loading-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            border-radius: 20px;
+        }
+        [data-theme="dark"] .loading-overlay { background: rgba(15, 23, 42, 0.7); }
+        .loading-overlay.active { display: flex; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
+    <!-- Spinner -->
+    <div class="loading-overlay" id="loadingSpinner">
+        <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
+    </div>
+
     <!-- Header -->
     <div class="header">
         <div class="brand">
@@ -465,6 +435,7 @@
             <div class="brand-title">កាបូបខ្ញុំ- MyWallet</div>
         </div>
         <div class="header-actions">
+            <div class="header-action" onclick="fetchDataFromSheet()" title="ធ្វើបច្ចុប្បន្នភាពទិន្នន័យ (Refresh)"><i class="fa-solid fa-rotate-right"></i></div>
             <div class="header-action" id="themeToggleBtn" onclick="toggleTheme()" title="ប្តូរពណ៌ទម្រង់ (Dark/Light Mode)"><i class="fa-solid fa-moon" id="themeIcon"></i></div>
         </div>
     </div>
@@ -548,15 +519,13 @@
                     <i class="fa-solid fa-trash-can"></i> សម្អាតទាំងអស់
                 </button>
                 <button class="btn-download" onclick="downloadPDF()">
-                    <i class="fa-solid fa-file-pdf"></i> ទាញយកប្រតិបត្តិការ
+                    <i class="fa-solid fa-file-pdf"></i> ទាញយក PDF
                 </button>
             </div>
         </div>
 
         <!-- Transaction List -->
-        <div class="transaction-list" id="transaction-list">
-            <!-- Items injected by JS -->
-        </div>
+        <div class="transaction-list" id="transaction-list"></div>
 
     </div>
 </div>
@@ -600,15 +569,18 @@
 </div>
 
 <script>
-    // App State stored in LocalStorage
-    let transactions = JSON.parse(localStorage.getItem('sheet_tracker_data')) || [];
-    let currentType = 'income';
+    // Web App URL ទទួលបានពី Google Apps Script Deployment របស់អ្នក
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYiVykwDPs71kkhWX5pvAi-cL3bHwvOedY6GkgBb8VwRWMYkWHQtPuowlayNjxNd_3/exec";
 
-    // Filter states ('day', 'week', 'month', 'year', 'all')
+    let transactions = [];
+    let currentType = 'income';
     let incomeFilter = 'day';
     let expenseFilter = 'day';
 
-    // Dark Mode Initialization & Toggle
+    function showLoading(show) {
+        document.getElementById('loadingSpinner').classList.toggle('active', show);
+    }
+
     function initTheme() {
         const savedTheme = localStorage.getItem('sheet_tracker_theme') || 'light';
         if (savedTheme === 'dark') {
@@ -634,15 +606,29 @@
         }
     }
 
-    // Format currency
     const formatUSD = (val) => '$' + Number(val).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     const formatKHR = (val) => Number(val).toLocaleString('en-US') + ' ៛';
 
-    // Set Default Datetime to Now (Local Time)
     function setNowDateTime() {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         document.getElementById('datetime').value = now.toISOString().slice(0,16);
+    }
+
+    // ទាញយកទិន្នន័យពី Google Sheets មកបង្ហាញ
+    async function fetchDataFromSheet() {
+        showLoading(true);
+        try {
+            const res = await fetch(GOOGLE_SCRIPT_URL);
+            const data = await res.json();
+            transactions = data.reverse(); // យកប្រតិបត្តិការថ្មីៗមកបង្ហាញលើគេ
+            updateUI();
+        } catch (err) {
+            console.error(err);
+            alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Google Sheet");
+        } finally {
+            showLoading(false);
+        }
     }
 
     function openModal(type) {
@@ -666,7 +652,7 @@
     }
 
     function openEditModal(id) {
-        const t = transactions.find(item => item.id === id);
+        const t = transactions.find(item => item.id == id);
         if(!t) return;
 
         currentType = t.type;
@@ -675,10 +661,7 @@
         document.getElementById('amountUSD').value = t.usd > 0 ? t.usd : '';
         document.getElementById('amountKHR').value = t.khr > 0 ? t.khr : '';
         document.getElementById('description').value = t.desc;
-        
-        if(t.datetime) {
-            document.getElementById('datetime').value = t.datetime;
-        }
+        document.getElementById('datetime').value = t.datetime;
 
         const title = document.getElementById('modalTitle');
         document.getElementById('saveBtnText').innerText = 'កែសម្រួល / Update';
@@ -700,7 +683,7 @@
         document.getElementById('editId').value = '';
     }
 
-    function handleSave(e) {
+    async function handleSave(e) {
         e.preventDefault();
 
         const usd = parseFloat(document.getElementById('amountUSD').value) || 0;
@@ -714,52 +697,79 @@
             return;
         }
 
-        if(editId) {
-            const index = transactions.findIndex(item => item.id == editId);
-            if(index !== -1) {
-                transactions[index].type = currentType;
-                transactions[index].usd = usd;
-                transactions[index].khr = khr;
-                transactions[index].desc = desc;
-                transactions[index].datetime = datetime;
-            }
-        } else {
-            const newEntry = {
-                id: Date.now(),
-                type: currentType,
-                usd: usd,
-                khr: khr,
-                desc: desc,
-                datetime: datetime
-            };
-            transactions.unshift(newEntry);
-        }
+        const id = editId ? parseInt(editId) : Date.now();
+        const action = editId ? 'EDIT' : 'ADD';
 
-        localStorage.setItem('sheet_tracker_data', JSON.stringify(transactions));
-        updateUI();
+        const payload = {
+            action: action,
+            id: id,
+            type: currentType,
+            usd: usd,
+            khr: khr,
+            desc: desc,
+            datetime: datetime
+        };
+
+        showLoading(true);
         closeModal();
-    }
 
-    // Direct Delete Function for Trash Button
-    function deleteTransaction(id) {
-        if(confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះមែនទេ?')) {
-            transactions = transactions.filter(t => t.id !== id);
-            localStorage.setItem('sheet_tracker_data', JSON.stringify(transactions));
-            updateUI();
+        try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            
+            // Sync ទិន្នន័យឡើងវិញបន្ទាប់ពីផ្ញើទៅ Google Sheet រួច
+            setTimeout(fetchDataFromSheet, 1500);
+        } catch (err) {
+            console.error(err);
+            alert("មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ");
+            showLoading(false);
         }
     }
 
-    // Clear All Transactions with Confirmation
-    function clearAllTransactions() {
+    async function deleteTransaction(id) {
+        if(confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះមែនទេ?')) {
+            showLoading(true);
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "DELETE", id: id })
+                });
+                setTimeout(fetchDataFromSheet, 1500);
+            } catch (err) {
+                console.error(err);
+                alert("មានបញ្ហាក្នុងការលុបទិន្នន័យ");
+                showLoading(false);
+            }
+        }
+    }
+
+    async function clearAllTransactions() {
         if(transactions.length === 0) {
             alert('គ្មានប្រតិបត្តិការសម្រាប់លុបទេ');
             return;
         }
 
         if(confirm('តើអ្នកពិតជាចង់យល់ព្រមលុបប្រតិបត្តិការចំណូលចំណាយទាំងអស់មែនទេ?')) {
-            transactions = [];
-            localStorage.removeItem('sheet_tracker_data');
-            updateUI();
+            showLoading(true);
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "CLEAR_ALL" })
+                });
+                setTimeout(fetchDataFromSheet, 1500);
+            } catch (err) {
+                console.error(err);
+                alert("មានបញ្ហាក្នុងការសម្អាតទិន្នន័យ");
+                showLoading(false);
+            }
         }
     }
 
@@ -768,11 +778,9 @@
         buttons.forEach(btn => btn.classList.remove('active'));
         event.currentTarget.classList.add('active');
 
-        if (type === 'income') {
-            incomeFilter = period;
-        } else {
-            expenseFilter = period;
-        }
+        if (type === 'income') incomeFilter = period;
+        else expenseFilter = period;
+        
         updateUI();
     }
 
@@ -795,13 +803,12 @@
         } else if (period === 'year') {
             return itemDate.getFullYear() === now.getFullYear();
         }
-        return true; // 'all'
+        return true;
     }
 
     function updateUI() {
         let totalIncUSD = 0, totalIncKHR = 0;
         let totalExpUSD = 0, totalExpKHR = 0;
-
         let filteredIncUSD = 0, filteredIncKHR = 0;
         let filteredExpUSD = 0, filteredExpKHR = 0;
 
@@ -825,7 +832,6 @@
                 }
             }
 
-            // Render List Item
             const dateStr = new Date(t.datetime).toLocaleString('km-KH', { dateStyle: 'short', timeStyle: 'short' });
             const itemHtml = `
                 <div class="t-item">
@@ -849,7 +855,6 @@
             listContainer.innerHTML += itemHtml;
         });
 
-        // Update Filtered Subtitles & Values
         const periodLabels = { 'day': 'Today', 'week': 'This Week', 'month': 'This Month', 'year': 'This Year', 'all': 'All Time' };
         
         document.getElementById('income-filter-subtitle').innerText = `Total Income (${periodLabels[incomeFilter]})`;
@@ -860,12 +865,10 @@
         document.getElementById('total-expense-usd').innerText = formatUSD(filteredExpUSD);
         document.getElementById('total-expense-khr').innerText = formatKHR(filteredExpKHR);
 
-        // Balance
         document.getElementById('balance-usd').innerText = formatUSD(totalIncUSD - totalExpUSD);
         document.getElementById('balance-khr').innerText = formatKHR(totalIncKHR - totalExpKHR);
     }
 
-    // Download Data as PDF using jsPDF (Clean English format to prevent encoding errors)
     function downloadPDF() {
         if(transactions.length === 0) {
             alert('មិនទាន់មានទិន្នន័យសម្រាប់ទាញយកជា PDF ទេ');
@@ -875,7 +878,6 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        // Title
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(16);
         doc.text("MyWallet - Transaction Report", 14, 20);
@@ -927,7 +929,6 @@
             y += 10;
         });
 
-        // Summary Section at the bottom
         y += 5;
         if (y > 240) {
             doc.addPage();
@@ -955,7 +956,7 @@
 
     // Initial Load
     initTheme();
-    updateUI();
+    fetchDataFromSheet();
 </script>
 
 </body>
