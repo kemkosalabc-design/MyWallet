@@ -1,9 +1,1143 @@
+
+Conversation with Gemini
+<!DOCTYPE html>
+
+<html lang="km">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>កាបូបខ្ញុំ- MyWallet - កត់ត្រាចំណូលចំណាយ</title>
+
+    <!-- Google Khmer Font & FontAwesome Icons -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- jsPDF Library -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    
+
+    <style>
+
+        :root {
+
+            --primary: #4F46E5;
+
+            --income: #10B981;
+
+            --income-bg: #E6F4EA;
+
+            --expense: #EF4444;
+
+            --expense-bg: #FCE8E6;
+
+            --bg: #F8FAFC;
+
+            --card-bg: #FFFFFF;
+
+            --text-main: #1E293B;
+
+            --text-sub: #64748B;
+
+            --border-color: #F1F5F9;
+
+            --input-bg: #FFFFFF;
+
+            --filter-bg: #F1F5F9;
+
+            --filter-tab-active-bg: #FFFFFF;
+
+            --modal-bg: #FFFFFF;
+
+        }
+
+
+
+        [data-theme="dark"] {
+
+            --primary: #6366F1;
+
+            --income: #34D399;
+
+            --income-bg: rgba(16, 185, 129, 0.15);
+
+            --expense: #F87171;
+
+            --expense-bg: rgba(239, 68, 68, 0.15);
+
+            --bg: #0F172A;
+
+            --card-bg: #1E293B;
+
+            --text-main: #F1F5F9;
+
+            --text-sub: #94A3B8;
+
+            --border-color: #334155;
+
+            --input-bg: #0F172A;
+
+            --filter-bg: #334155;
+
+            --filter-tab-active-bg: #475569;
+
+            --modal-bg: #1E293B;
+
+        }
+
+
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', sans-serif; }
+
+        body { background-color: var(--bg); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; transition: background-color 0.3s, color 0.3s; }
+
+        .app-container { width: 100%; max-width: 480px; background: var(--card-bg); min-height: 100vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+
+        .brand { display: flex; align-items: center; gap: 12px; }
+
+        .brand-icon { width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+        .brand-title { font-size: 20px; font-weight: 700; color: var(--text-main); }
+
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+
+        .header-action { color: var(--text-sub); font-size: 16px; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--filter-bg); }
+
+        .header-action:hover { opacity: 0.8; }
+
+        .content { padding: 0 20px 100px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+        .card { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+        .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+
+        .card-title { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
+
+        .card-sub-title { font-size: 11px; color: var(--text-sub); opacity: 0.8; }
+
+        .card-amount { font-size: 24px; font-weight: 700; margin-top: 4px; }
+
+        .card-income .card-icon { background: var(--income-bg); color: var(--income); }
+
+        .card-expense .card-icon { background: var(--expense-bg); color: var(--expense); }
+
+        .card-balance { background: var(--primary); color: white; border: none; }
+
+        .card-balance .card-icon { background: rgba(255,255,255,0.2); color: white; }
+
+        .card-balance .card-title, .card-balance .card-sub-title { color: rgba(255,255,255,0.8); }
+
+        .card-balance .card-amount { color: white; }
+
+        .filter-tabs { display: flex; gap: 4px; background: var(--filter-bg); padding: 3px; border-radius: 10px; }
+
+        .filter-tab { background: transparent; border: none; padding: 4px 8px; font-size: 11px; font-weight: 600; color: var(--text-sub); border-radius: 7px; cursor: pointer; }
+
+        .filter-tab.active { background: var(--filter-tab-active-bg); color: var(--text-main); }
+
+        .currency-wrap { display: flex; justify-content: space-between; align-items: flex-end; }
+
+        .amount-khr { font-size: 30px; font-weight: 700; opacity: 0.95; line-height: 1; }
+
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+
+        .btn-action { padding: 14px; border-radius: 14px; border: none; color: white; font-size: 15px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+
+        .btn-income { background: var(--income); }
+
+        .btn-expense { background: var(--expense); }
+
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+
+        .header-actions-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+        .btn-download, .btn-clear-all { border: none; padding: 8px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: 600; }
+
+        .btn-download { background: var(--filter-bg); color: var(--text-main); }
+
+        .btn-clear-all { background: var(--expense-bg); color: var(--expense); }
+
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: flex-end; z-index: 1000; }
+
+        .modal.active { display: flex; }
+
+        .modal-content { background: var(--modal-bg); color: var(--text-main); width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 24px; }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-group label { display: block; font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
+
+        .form-control { width: 100%; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); border-radius: 10px; font-size: 15px; outline: none; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .btn-save { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+        .transaction-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
+
+        .t-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
+
+        .t-info div:first-child { font-weight: 600; font-size: 14px; }
+
+        .t-info div:last-child { font-size: 11px; color: var(--text-sub); }
+
+        .t-right-group { display: flex; align-items: center; gap: 10px; }
+
+        .t-amount { font-weight: 700; text-align: right; }
+
+        .t-amount.income { color: var(--income); }
+
+        .t-amount.expense { color: var(--expense); }
+
+        .t-actions { display: flex; gap: 4px; }
+
+        .btn-t-action { background: var(--filter-bg); border: none; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-sub); }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+<div class="app-container">
+
+    <div class="header">
+
+        <div class="brand">
+
+            <div class="brand-icon"><i class="fa-solid fa-wallet"></i></div>
+
+            <div class="brand-title">កាបូបខ្ញុំ- MyWallet</div>
+
+        </div>
+
+        <div class="header-actions">
+
+            <!-- Backup & Restore Icons -->
+
+            <div class="header-action" onclick="exportData()" title="ទាញយកទិន្នន័យរក្សាទុក (Backup)"><i class="fa-solid fa-download"></i></div>
+
+            <div class="header-action" onclick="document.getElementById('importFile').click()" title="បញ្ចូលទិន្នន័យវិញ (Restore)"><i class="fa-solid fa-upload"></i></div>
+
+            <input type="file" id="importFile" style="display:none" onchange="importData(event)" accept=".json">
+
+            <div class="header-action" id="themeToggleBtn" onclick="toggleTheme()" title="ប្តូរ Dark/Light Mode"><i class="fa-solid fa-moon" id="themeIcon"></i></div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="content">
+
+        <!-- Income Card -->
+
+        <div class="card card-income">
+
+            <div class="card-header">
+
+                <div class="card-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+
+                <div class="filter-tabs">
+
+                    <button class="filter-tab active" onclick="setFilter('income', 'day', event)">ថ្ងៃ</button>
+
+                    <button class="filter-tab" onclick="setFilter('income', 'week', event)">សប្តាហ៍</button>
+
+                    <button class="filter-tab" onclick="setFilter('income', 'month', event)">ខែ</button>
+
+                    <button class="filter-tab" onclick="setFilter('income', 'year', event)">ឆ្នាំ</button>
+
+                    <button class="filter-tab" onclick="setFilter('income', 'all', event)">សរុប</button>
+
+                </div>
+
+            </div>
+
+            <div class="card-title">ចំណូលសរុប</div>
+
+            <div class="card-sub-title" id="income-filter-subtitle">Total Income (Today)</div>
+
+            <div class="currency-wrap">
+
+                <div class="card-amount" id="total-income-usd">$0.00</div>
+
+                <div class="amount-khr" id="total-income-khr">0 ៛</div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Expense Card -->
+
+        <div class="card card-expense">
+
+            <div class="card-header">
+
+                <div class="card-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
+
+                <div class="filter-tabs">
+
+                    <button class="filter-tab active" onclick="setFilter('expense', 'day', event)">ថ្ងៃ</button>
+
+                    <button class="filter-tab" onclick="setFilter('expense', 'week', event)">សប្តាហ៍</button>
+
+                    <button class="filter-tab" onclick="setFilter('expense', 'month', event)">ខែ</button>
+
+                    <button class="filter-tab" onclick="setFilter('expense', 'year', event)">ឆ្នាំ</button>
+
+                    <button class="filter-tab" onclick="setFilter('expense', 'all', event)">សរុប</button>
+
+                </div>
+
+            </div>
+
+            <div class="card-title">ចំណាយសរុប</div>
+
+            <div class="card-sub-title" id="expense-filter-subtitle">Total Expenses (Today)</div>
+
+            <div class="currency-wrap">
+
+                <div class="card-amount" id="total-expense-usd">$0.00</div>
+
+                <div class="amount-khr" id="total-expense-khr">0 ៛</div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Current Balance Card -->
+
+        <div class="card card-balance">
+
+            <div class="card-header">
+
+                <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
+
+            </div>
+
+            <div class="card-title">ប្រាក់នៅសល់សរុប</div>
+
+            <div class="card-sub-title">Overall Current Balance</div>
+
+            <div class="currency-wrap">
+
+                <div class="card-amount" id="balance-usd">$0.00</div>
+
+                <div class="amount-khr" id="balance-khr">0 ៛</div>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="action-buttons">
+
+            <button class="btn-action btn-income" onclick="openModal('income')">+ ចំណូល / Income</button>
+
+            <button class="btn-action btn-expense" onclick="openModal('expense')">- ចំណាយ / Expense</button>
+
+        </div>
+
+
+
+        <div class="history-header">
+
+            <div><b>ប្រតិបត្តិការថ្មីៗ</b></div>
+
+            <div class="header-actions-group">
+
+                <button class="btn-clear-all" onclick="clearAllTransactions()"><i class="fa-solid fa-trash-can"></i> សម្អាត</button>
+
+                <button class="btn-download" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="transaction-list" id="transaction-list"></div>
+
+    </div>
+
+</div>
+
+
+
+<!-- Modal Form -->
+
+<div class="modal" id="entryModal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+
+                <h3 id="modalTitle">បញ្ជូលទិន្នន័យ</h3>
+
+            </div>
+
+            <i class="fa-solid fa-xmark" style="font-size: 20px; cursor: pointer;" onclick="closeModal()"></i>
+
+        </div>
+
+
+
+        <form id="trackerForm" onsubmit="handleSave(event)">
+
+            <input type="hidden" id="type">
+
+            <input type="hidden" id="editId">
+
+            
+
+            <div class="form-group">
+
+                <label>ថ្ងៃខែឆ្នាំ / Date</label>
+
+                <input type="datetime-local" id="datetime" class="form-control" required>
+
+            </div>
+
+
+
+            <div class="form-group">
+
+                <label>ចំនួនទឹកប្រាក់ / Amount</label>
+
+                <div class="grid-2">
+
+                    <input type="number" step="0.01" id="amountUSD" class="form-control" placeholder="0.00 $">
+
+                    <input type="number" id="amountKHR" class="form-control" placeholder="0 ៛">
+
+                </div>
+
+            </div>
+
+
+
+            <div class="form-group">
+
+                <label>បរិយាយ / Description</label>
+
+                <input type="text" id="description" class="form-control" placeholder="ឧទាហរណ៍៖ ទិញបាយ..." required>
+
+            </div>
+
+
+
+            <button type="submit" class="btn-save" id="saveBtnText">រក្សាទុក / Save</button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    // -----------------------------------------------------------
+
+    // INDEXEDDB ENGINE (រក្សាទុកទិន្នន័យលើ DEVICE ជាប់រហូត)
+
+    // -----------------------------------------------------------
+
+    let db;
+
+    const dbName = "MyWalletDB";
+
+
+
+    function initDB() {
+
+        return new Promise((resolve, reject) => {
+
+            const request = indexedDB.open(dbName, 1);
+
+            request.onupgradeneeded = (e) => {
+
+                db = e.target.result;
+
+                if (!db.objectStoreNames.contains("transactions")) {
+
+                    db.createObjectStore("transactions", { keyPath: "id" });
+
+                }
+
+            };
+
+            request.onsuccess = (e) => {
+
+                db = e.target.result;
+
+                resolve(db);
+
+            };
+
+            request.onerror = (e) => reject(e);
+
+        });
+
+    }
+
+
+
+    async function getAllFromDB() {
+
+        return new Promise((resolve) => {
+
+            const tx = db.transaction("transactions", "readonly");
+
+            const store = tx.objectStore("transactions");
+
+            const req = store.getAll();
+
+            req.onsuccess = () => resolve(req.result || []);
+
+        });
+
+    }
+
+
+
+    async function saveToDB(item) {
+
+        return new Promise((resolve) => {
+
+            const tx = db.transaction("transactions", "readwrite");
+
+            const store = tx.objectStore("transactions");
+
+            store.put(item);
+
+            tx.oncomplete = () => resolve();
+
+        });
+
+    }
+
+
+
+    async function deleteFromDB(id) {
+
+        return new Promise((resolve) => {
+
+            const tx = db.transaction("transactions", "readwrite");
+
+            const store = tx.objectStore("transactions");
+
+            store.delete(id);
+
+            tx.oncomplete = () => resolve();
+
+        });
+
+    }
+
+
+
+    async function clearDB() {
+
+        return new Promise((resolve) => {
+
+            const tx = db.transaction("transactions", "readwrite");
+
+            const store = tx.objectStore("transactions");
+
+            store.clear();
+
+            tx.oncomplete = () => resolve();
+
+        });
+
+    }
+
+
+
+    // -----------------------------------------------------------
+
+    // APP LOGIC
+
+    // -----------------------------------------------------------
+
+    let transactions = [];
+
+    let currentType = 'income';
+
+    let incomeFilter = 'day';
+
+    let expenseFilter = 'day';
+
+
+
+    const formatUSD = (val) => '$' + Number(val).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+    const formatKHR = (val) => Number(val).toLocaleString('en-US') + ' ៛';
+
+
+
+    function initTheme() {
+
+        const savedTheme = localStorage.getItem('sheet_tracker_theme') || 'light';
+
+        if (savedTheme === 'dark') {
+
+            document.documentElement.setAttribute('data-theme', 'dark');
+
+            document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+
+        }
+
+    }
+
+
+
+    function toggleTheme() {
+
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+
+        const icon = document.getElementById('themeIcon');
+
+        if (currentTheme === 'dark') {
+
+            document.documentElement.removeAttribute('data-theme');
+
+            localStorage.setItem('sheet_tracker_theme', 'light');
+
+            icon.className = 'fa-solid fa-moon';
+
+        } else {
+
+            document.documentElement.setAttribute('data-theme', 'dark');
+
+            localStorage.setItem('sheet_tracker_theme', 'dark');
+
+            icon.className = 'fa-solid fa-sun';
+
+        }
+
+    }
+
+
+
+    function setNowDateTime() {
+
+        const now = new Date();
+
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+        document.getElementById('datetime').value = now.toISOString().slice(0,16);
+
+    }
+
+
+
+    function openModal(type) {
+
+        currentType = type;
+
+        document.getElementById('type').value = type;
+
+        document.getElementById('editId').value = '';
+
+        setNowDateTime();
+
+        
+
+        const title = document.getElementById('modalTitle');
+
+        document.getElementById('saveBtnText').innerText = 'រក្សាទុក / Save';
+
+        title.innerText = type === 'income' ? 'បញ្ជូលចំណូល / Add Income' : 'បញ្ជូលចំណាយ / Add Expense';
+
+        title.style.color = type === 'income' ? 'var(--income)' : 'var(--expense)';
+
+
+
+        document.getElementById('entryModal').classList.add('active');
+
+    }
+
+
+
+    function openEditModal(id) {
+
+        const t = transactions.find(item => item.id === id);
+
+        if(!t) return;
+
+
+
+        currentType = t.type;
+
+        document.getElementById('type').value = t.type;
+
+        document.getElementById('editId').value = t.id;
+
+        document.getElementById('amountUSD').value = t.usd > 0 ? t.usd : '';
+
+        document.getElementById('amountKHR').value = t.khr > 0 ? t.khr : '';
+
+        document.getElementById('description').value = t.desc;
+
+        document.getElementById('datetime').value = t.datetime;
+
+
+
+        const title = document.getElementById('modalTitle');
+
+        document.getElementById('saveBtnText').innerText = 'កែសម្រួល / Update';
+
+        title.innerText = t.type === 'income' ? 'កែសម្រួលចំណូល / Edit Income' : 'កែសម្រួលចំណាយ / Edit Expense';
+
+
+
+        document.getElementById('entryModal').classList.add('active');
+
+    }
+
+
+
+    function closeModal() {
+
+        document.getElementById('entryModal').classList.remove('active');
+
+        document.getElementById('trackerForm').reset();
+
+    }
+
+
+
+    async function handleSave(e) {
+
+        e.preventDefault();
+
+        const usd = parseFloat(document.getElementById('amountUSD').value) || 0;
+
+        const khr = parseFloat(document.getElementById('amountKHR').value) || 0;
+
+        const desc = document.getElementById('description').value;
+
+        const datetime = document.getElementById('datetime').value;
+
+        const editId = document.getElementById('editId').value;
+
+
+
+        if (usd === 0 && khr === 0) {
+
+            alert('សូមបញ្ជូលទឹកប្រាក់យ៉ាងហោចណាស់មួយ');
+
+            return;
+
+        }
+
+
+
+        const itemData = {
+
+            id: editId ? Number(editId) : Date.now(),
+
+            type: currentType,
+
+            usd: usd,
+
+            khr: khr,
+
+            desc: desc,
+
+            datetime: datetime
+
+        };
+
+
+
+        await saveToDB(itemData);
+
+        transactions = await getAllFromDB();
+
+        updateUI();
+
+        closeModal();
+
+    }
+
+
+
+    async function deleteTransaction(id) {
+
+        if(confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះមែនទេ?')) {
+
+            await deleteFromDB(id);
+
+            transactions = await getAllFromDB();
+
+            updateUI();
+
+        }
+
+    }
+
+
+
+    async function clearAllTransactions() {
+
+        if(confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យទាំងអស់មែនទេ?')) {
+
+            await clearDB();
+
+            transactions = [];
+
+            updateUI();
+
+        }
+
+    }
+
+
+
+    function setFilter(type, period, event) {
+
+        const buttons = event.currentTarget.parentElement.querySelectorAll('.filter-tab');
+
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        event.currentTarget.classList.add('active');
+
+        if (type === 'income') incomeFilter = period;
+
+        else expenseFilter = period;
+
+        updateUI();
+
+    }
+
+
+
+    function checkPeriodMatch(itemDateStr, period) {
+
+        const itemDate = new Date(itemDateStr);
+
+        const now = new Date();
+
+        if (period === 'day') return itemDate.toDateString() === now.toDateString();
+
+        if (period === 'week') {
+
+            const firstDay = new Date(now);
+
+            firstDay.setDate(now.getDate() - now.getDay());
+
+            firstDay.setHours(0,0,0,0);
+
+            return itemDate >= firstDay;
+
+        }
+
+        if (period === 'month') return itemDate.getFullYear() === now.getFullYear() && itemDate.getMonth() === now.getMonth();
+
+        if (period === 'year') return itemDate.getFullYear() === now.getFullYear();
+
+        return true;
+
+    }
+
+
+
+    function updateUI() {
+
+        let totalIncUSD = 0, totalIncKHR = 0;
+
+        let totalExpUSD = 0, totalExpKHR = 0;
+
+        let filteredIncUSD = 0, filteredIncKHR = 0;
+
+        let filteredExpUSD = 0, filteredExpKHR = 0;
+
+
+
+        const listContainer = document.getElementById('transaction-list');
+
+        listContainer.innerHTML = '';
+
+
+
+        // Sort descending
+
+        transactions.sort((a, b) => b.id - a.id);
+
+
+
+        transactions.forEach(t => {
+
+            if(t.type === 'income') {
+
+                totalIncUSD += t.usd; totalIncKHR += t.khr;
+
+                if(checkPeriodMatch(t.datetime, incomeFilter)) {
+
+                    filteredIncUSD += t.usd; filteredIncKHR += t.khr;
+
+                }
+
+            } else {
+
+                totalExpUSD += t.usd; totalExpKHR += t.khr;
+
+                if(checkPeriodMatch(t.datetime, expenseFilter)) {
+
+                    filteredExpUSD += t.usd; filteredExpKHR += t.khr;
+
+                }
+
+            }
+
+
+
+            const dateStr = new Date(t.datetime).toLocaleString('km-KH', { dateStyle: 'short', timeStyle: 'short' });
+
+            listContainer.innerHTML += `
+
+                <div class="t-item">
+
+                    <div class="t-info">
+
+                        <div>${t.desc}</div>
+
+                        <div>${dateStr}</div>
+
+                    </div>
+
+                    <div class="t-right-group">
+
+                        <div class="t-amount ${t.type}">
+
+                            ${t.type === 'income' ? '+' : '-'}${t.usd > 0 ? formatUSD(t.usd) : ''}
+
+                            ${t.usd > 0 && t.khr > 0 ? '<br>' : ''}
+
+                            ${t.khr > 0 ? formatKHR(t.khr) : ''}
+
+                        </div>
+
+                        <div class="t-actions">
+
+                            <button class="btn-t-action" onclick="openEditModal(${t.id})"><i class="fa-solid fa-pen"></i></button>
+
+                            <button class="btn-t-action" onclick="deleteTransaction(${t.id})"><i class="fa-solid fa-trash-can"></i></button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+
+
+        document.getElementById('total-income-usd').innerText = formatUSD(filteredIncUSD);
+
+        document.getElementById('total-income-khr').innerText = formatKHR(filteredIncKHR);
+
+        document.getElementById('total-expense-usd').innerText = formatUSD(filteredExpUSD);
+
+        document.getElementById('total-expense-khr').innerText = formatKHR(filteredExpKHR);
+
+        document.getElementById('balance-usd').innerText = formatUSD(totalIncUSD - totalExpUSD);
+
+        document.getElementById('balance-khr').innerText = formatKHR(totalIncKHR - totalExpKHR);
+
+    }
+
+
+
+    // -----------------------------------------------------------
+
+    // BACKUP & RESTORE (EXPORT / IMPORT JSON FILE)
+
+    // -----------------------------------------------------------
+
+    function exportData() {
+
+        if(transactions.length === 0) {
+
+            alert('គ្មានទិន្នន័យសម្រាប់ទាញយកទេ');
+
+            return;
+
+        }
+
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions));
+
+        const downloadAnchor = document.createElement('a');
+
+        downloadAnchor.setAttribute("href", dataStr);
+
+        downloadAnchor.setAttribute("download", `MyWallet_Backup_${new Date().toISOString().slice(0,10)}.json`);
+
+        document.body.appendChild(downloadAnchor);
+
+        downloadAnchor.click();
+
+        downloadAnchor.remove();
+
+    }
+
+
+
+    function importData(event) {
+
+        const fileReader = new FileReader();
+
+        fileReader.onload = async function() {
+
+            try {
+
+                const importedItems = JSON.parse(fileReader.result);
+
+                if(Array.isArray(importedItems)) {
+
+                    for(let item of importedItems) {
+
+                        await saveToDB(item);
+
+                    }
+
+                    transactions = await getAllFromDB();
+
+                    updateUI();
+
+                    alert('បញ្ចូលទិន្នន័យជោគជ័យ!');
+
+                }
+
+            } catch(e) {
+
+                alert('File មិនត្រឹមត្រូវទេ');
+
+            }
+
+        };
+
+        fileReader.readAsText(event.target.files[0]);
+
+    }
+
+
+
+    // PDF Download
+
+    function downloadPDF() {
+
+        if(transactions.length === 0) return alert('គ្មានទិន្នន័យ');
+
+        const { jsPDF } = window.jspdf;
+
+        const doc = new jsPDF();
+
+        doc.text("MyWallet - Report", 14, 20);
+
+        let y = 30;
+
+        transactions.forEach(t => {
+
+            doc.text(`${t.datetime} | ${t.type} | ${t.desc} | $${t.usd} / ${t.khr}R`, 14, y);
+
+            y += 8;
+
+        });
+
+        doc.save('Report.pdf');
+
+    }
+
+
+
+    // App Startup
+
+    window.onload = async () => {
+
+        initTheme();
+
+        await initDB();
+
+        transactions = await getAllFromDB();
+
+        updateUI();
+
+    };
+
+</script>
+
+
+
+</body>
+
+</html>
+
+
+
+កូដខាងលើនេះនៅតែមានបញ្ហាត្រង់ទិន្នន័យមិនបានរក្សាទុក វាតែងតែ refresh new ដែលមិនសាកសមសម្រាប់អ្នកប្រើប្រាស់ដោយច្រើនទេ អ្នកប្រើប្រាស់គេដឹងតែត្រូវការបញ្ជូលចំណូលនិងចំណាយ ហើយប្រតិបត្តិការត្រូវបន្តគ្នារហូត ពីមួយថ្ងៃទៅមួយថ្ងៃ​
+
+Your HTML file is ready
+
+HTML icon
+MyWallet
+ HTML 
+Open
+មូលហេតុដែលកូដចាស់មានបញ្ហា Refresh/បាត់ទិន្នន័យ (Issue Cause)
+១. IndexedDB ជួប Async/Race Condition៖ IndexedDB ដំណើរការជា Asynchronous ប៉ុន្តែការទាញយក និងរក្សាទុកទិន្នន័យមិនបាន Sync ត្រឹមត្រូវ ពេលបើក App ដំបូង ឬពេល handleSave ធ្វើឲ្យទិន្នន័យមិនទាន់ Save រួចរាល់មុនពេល UI Render។
+២. ស្មុគស្មាញពេកសម្រាប់ការរក្សាទុកទិន្នន័យធម្មតា៖ សម្រាប់ web app ទំហំតូច/មធ្យម ការប្រើ localStorage មានភាពរហ័ស ជឿជាក់បានខ្ពស់ (Reliable) និងរក្សាទុកទិន្នន័យជាប់រហូតលើ Web Browser របស់ Browser/Mobile។
+
+កែសម្រួលចំណុចសំខាន់ៗក្នុងកូដថ្មីនេះ (Key Fixes)
+ប្តូរមកប្រើ localStorage Engine៖ រក្សាទុកទិន្នន័យបានជាប់រហូត (Persistent) ទោះបិទ App, Refresh Page, ឬប្រើពីមួយថ្ងៃទៅមួយថ្ងៃក៏មិនបាត់ដែរ។
+
+Sorting តាមកាលបរិច្ឆេទ៖ តម្រៀបប្រតិបត្តិការថ្មីៗនៅខាងលើគេ (datetime ចុងក្រោយបង្អស់មកមុន)។
+
+កែសម្រួល Modal Reset & Edit Function៖ ពេលបើក Modal វានឹង Clear ទិន្នន័យចាស់ចេញ ហើយពេល Edit វានឹង Update ទិន្នន័យចាស់ដោយមិនបង្កើត Duplicate ឡើយ។
+
+កែសម្រួល UI ឱ្យស្អាត និងសមស្រប៖ Subtitles ភាសាខ្មែរបង្ហាញតាម Filter ថ្ងៃ/សប្តាហ៍/ខែ/ឆ្នាំ/សរុប ច្បាស់លាស់។
+
+
+
+
+Gemini is AI and can make mistakes.
+
 <!DOCTYPE html>
 <html lang="km">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>កាបូបខ្ញុំ- MyWallet - កត់ត្រាចំណូលចំណាយ</title>
+    <title>កាបូបខ្ញុំ - MyWallet - កត់ត្រាចំណូលចំណាយ</title>
     <!-- Google Khmer Font & FontAwesome Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -72,7 +1206,7 @@
         .filter-tab { background: transparent; border: none; padding: 4px 8px; font-size: 11px; font-weight: 600; color: var(--text-sub); border-radius: 7px; cursor: pointer; }
         .filter-tab.active { background: var(--filter-tab-active-bg); color: var(--text-main); }
         .currency-wrap { display: flex; justify-content: space-between; align-items: flex-end; }
-        .amount-khr { font-size: 30px; font-weight: 700; opacity: 0.95; line-height: 1; }
+        .amount-khr { font-size: 22px; font-weight: 700; opacity: 0.95; line-height: 1; }
         .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
         .btn-action { padding: 14px; border-radius: 14px; border: none; color: white; font-size: 15px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
         .btn-income { background: var(--income); }
@@ -134,7 +1268,7 @@
                 </div>
             </div>
             <div class="card-title">ចំណូលសរុប</div>
-            <div class="card-sub-title" id="income-filter-subtitle">Total Income (Today)</div>
+            <div class="card-sub-title" id="income-filter-subtitle">ចំណូលសរុប (ថ្ងៃនេះ)</div>
             <div class="currency-wrap">
                 <div class="card-amount" id="total-income-usd">$0.00</div>
                 <div class="amount-khr" id="total-income-khr">0 ៛</div>
@@ -154,7 +1288,7 @@
                 </div>
             </div>
             <div class="card-title">ចំណាយសរុប</div>
-            <div class="card-sub-title" id="expense-filter-subtitle">Total Expenses (Today)</div>
+            <div class="card-sub-title" id="expense-filter-subtitle">ចំណាយសរុប (ថ្ងៃនេះ)</div>
             <div class="currency-wrap">
                 <div class="card-amount" id="total-expense-usd">$0.00</div>
                 <div class="amount-khr" id="total-expense-khr">0 ៛</div>
@@ -167,7 +1301,7 @@
                 <div class="card-icon"><i class="fa-solid fa-wallet"></i></div>
             </div>
             <div class="card-title">ប្រាក់នៅសល់សរុប</div>
-            <div class="card-sub-title">Overall Current Balance</div>
+            <div class="card-sub-title">តុល្យភាពសរុបបច្ចុប្បន្ន</div>
             <div class="currency-wrap">
                 <div class="card-amount" id="balance-usd">$0.00</div>
                 <div class="amount-khr" id="balance-khr">0 ៛</div>
@@ -230,62 +1364,26 @@
 
 <script>
     // -----------------------------------------------------------
-    // INDEXEDDB ENGINE (រក្សាទុកទិន្នន័យលើ DEVICE ជាប់រហូត)
+    // LOCALSTORAGE FALLBACK & STORAGE ENGINE
     // -----------------------------------------------------------
-    let db;
-    const dbName = "MyWalletDB";
+    const STORAGE_KEY = "MyWallet_Transactions_Data";
 
-    function initDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName, 1);
-            request.onupgradeneeded = (e) => {
-                db = e.target.result;
-                if (!db.objectStoreNames.contains("transactions")) {
-                    db.createObjectStore("transactions", { keyPath: "id" });
-                }
-            };
-            request.onsuccess = (e) => {
-                db = e.target.result;
-                resolve(db);
-            };
-            request.onerror = (e) => reject(e);
-        });
+    function getStorageData() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error("Storage error:", e);
+            return [];
+        }
     }
 
-    async function getAllFromDB() {
-        return new Promise((resolve) => {
-            const tx = db.transaction("transactions", "readonly");
-            const store = tx.objectStore("transactions");
-            const req = store.getAll();
-            req.onsuccess = () => resolve(req.result || []);
-        });
-    }
-
-    async function saveToDB(item) {
-        return new Promise((resolve) => {
-            const tx = db.transaction("transactions", "readwrite");
-            const store = tx.objectStore("transactions");
-            store.put(item);
-            tx.oncomplete = () => resolve();
-        });
-    }
-
-    async function deleteFromDB(id) {
-        return new Promise((resolve) => {
-            const tx = db.transaction("transactions", "readwrite");
-            const store = tx.objectStore("transactions");
-            store.delete(id);
-            tx.oncomplete = () => resolve();
-        });
-    }
-
-    async function clearDB() {
-        return new Promise((resolve) => {
-            const tx = db.transaction("transactions", "readwrite");
-            const store = tx.objectStore("transactions");
-            store.clear();
-            tx.oncomplete = () => resolve();
-        });
+    function saveStorageData(data) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+            console.error("Storage save error:", e);
+        }
     }
 
     // -----------------------------------------------------------
@@ -331,6 +1429,9 @@
         currentType = type;
         document.getElementById('type').value = type;
         document.getElementById('editId').value = '';
+        document.getElementById('amountUSD').value = '';
+        document.getElementById('amountKHR').value = '';
+        document.getElementById('description').value = '';
         setNowDateTime();
         
         const title = document.getElementById('modalTitle');
@@ -365,7 +1466,7 @@
         document.getElementById('trackerForm').reset();
     }
 
-    async function handleSave(e) {
+    function handleSave(e) {
         e.preventDefault();
         const usd = parseFloat(document.getElementById('amountUSD').value) || 0;
         const khr = parseFloat(document.getElementById('amountKHR').value) || 0;
@@ -378,43 +1479,65 @@
             return;
         }
 
-        const itemData = {
-            id: editId ? Number(editId) : Date.now(),
-            type: currentType,
-            usd: usd,
-            khr: khr,
-            desc: desc,
-            datetime: datetime
-        };
+        if (editId) {
+            // Update existing
+            const index = transactions.findIndex(t => t.id === Number(editId));
+            if (index !== -1) {
+                transactions[index] = { id: Number(editId), type: currentType, usd, khr, desc, datetime };
+            }
+        } else {
+            // Create new
+            const itemData = {
+                id: Date.now(),
+                type: currentType,
+                usd: usd,
+                khr: khr,
+                desc: desc,
+                datetime: datetime
+            };
+            transactions.push(itemData);
+        }
 
-        await saveToDB(itemData);
-        transactions = await getAllFromDB();
+        saveStorageData(transactions);
         updateUI();
         closeModal();
     }
 
-    async function deleteTransaction(id) {
+    function deleteTransaction(id) {
         if(confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះមែនទេ?')) {
-            await deleteFromDB(id);
-            transactions = await getAllFromDB();
+            transactions = transactions.filter(t => t.id !== id);
+            saveStorageData(transactions);
             updateUI();
         }
     }
 
-    async function clearAllTransactions() {
+    function clearAllTransactions() {
         if(confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យទាំងអស់មែនទេ?')) {
-            await clearDB();
             transactions = [];
+            saveStorageData(transactions);
             updateUI();
         }
     }
+
+    const filterLabels = {
+        'day': '(ថ្ងៃនេះ)',
+        'week': '(សប្តាហ៍នេះ)',
+        'month': '(ខែនេះ)',
+        'year': '(ឆ្នាំនេះ)',
+        'all': '(សរុប)'
+    };
 
     function setFilter(type, period, event) {
         const buttons = event.currentTarget.parentElement.querySelectorAll('.filter-tab');
         buttons.forEach(btn => btn.classList.remove('active'));
         event.currentTarget.classList.add('active');
-        if (type === 'income') incomeFilter = period;
-        else expenseFilter = period;
+        if (type === 'income') {
+            incomeFilter = period;
+            document.getElementById('income-filter-subtitle').innerText = 'ចំណូលសរុប ' + filterLabels[period];
+        } else {
+            expenseFilter = period;
+            document.getElementById('expense-filter-subtitle').innerText = 'ចំណាយសរុប ' + filterLabels[period];
+        }
         updateUI();
     }
 
@@ -443,7 +1566,7 @@
         listContainer.innerHTML = '';
 
         // Sort descending
-        transactions.sort((a, b) => b.id - a.id);
+        transactions.sort((a, b) => new Date(b.datetime) - new Date(a.datetime) || b.id - a.id);
 
         transactions.forEach(t => {
             if(t.type === 'income') {
@@ -496,7 +1619,7 @@
             alert('គ្មានទិន្នន័យសម្រាប់ទាញយកទេ');
             return;
         }
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions));
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
         downloadAnchor.setAttribute("download", `MyWallet_Backup_${new Date().toISOString().slice(0,10)}.json`);
@@ -507,16 +1630,16 @@
 
     function importData(event) {
         const fileReader = new FileReader();
-        fileReader.onload = async function() {
+        fileReader.onload = function() {
             try {
                 const importedItems = JSON.parse(fileReader.result);
                 if(Array.isArray(importedItems)) {
-                    for(let item of importedItems) {
-                        await saveToDB(item);
-                    }
-                    transactions = await getAllFromDB();
+                    transactions = importedItems;
+                    saveStorageData(transactions);
                     updateUI();
                     alert('បញ្ចូលទិន្នន័យជោគជ័យ!');
+                } else {
+                    alert('File មិនត្រឹមត្រូវទេ');
                 }
             } catch(e) {
                 alert('File មិនត្រឹមត្រូវទេ');
@@ -530,23 +1653,39 @@
         if(transactions.length === 0) return alert('គ្មានទិន្នន័យ');
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text("MyWallet - Report", 14, 20);
-        let y = 30;
+        doc.setFontSize(16);
+        doc.text("MyWallet - Income & Expense Report", 14, 20);
+        doc.setFontSize(10);
+        doc.text(`Generated Date: ${new Date().toLocaleString()}`, 14, 28);
+        
+        let y = 38;
+        doc.text("Date/Time | Type | Description | Amount", 14, y);
+        doc.line(14, y + 2, 196, y + 2);
+        y += 10;
+
         transactions.forEach(t => {
-            doc.text(`${t.datetime} | ${t.type} | ${t.desc} | $${t.usd} / ${t.khr}R`, 14, y);
+            if (y > 280) {
+                doc.addPage();
+                y = 20;
+            }
+            const dateStr = t.datetime.replace('T', ' ');
+            const amtStr = `$${t.usd.toFixed(2)} / ${t.khr.toLocaleString()} KHR`;
+            doc.text(`${dateStr} | ${t.type.toUpperCase()} | ${t.desc} | ${amtStr}`, 14, y);
             y += 8;
         });
-        doc.save('Report.pdf');
+
+        doc.save('MyWallet_Report.pdf');
     }
 
     // App Startup
-    window.onload = async () => {
+    window.onload = () => {
         initTheme();
-        await initDB();
-        transactions = await getAllFromDB();
+        transactions = getStorageData();
         updateUI();
     };
 </script>
 
 </body>
 </html>
+MyWallet.html
+Displaying MyWallet.html.
