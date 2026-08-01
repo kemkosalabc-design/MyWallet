@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- jsPDF Library for PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- localForage Library for Persistent IndexedDB Storage -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     
     <style>
         :root {
@@ -600,13 +602,48 @@
 </div>
 
 <script>
-    // App State stored in LocalStorage
-    let transactions = JSON.parse(localStorage.getItem('sheet_tracker_data')) || [];
+    // App State
+    let transactions = [];
     let currentType = 'income';
 
     // Filter states ('day', 'week', 'month', 'year', 'all')
     let incomeFilter = 'day';
     let expenseFilter = 'day';
+
+    // Configure localForage (IndexedDB Configuration)
+    localforage.config({
+        name: 'MyWalletApp',
+        storeName: 'transactions_db'
+    });
+
+    // Load Transactions from localForage (IndexedDB)
+    async function loadData() {
+        try {
+            const val = await localforage.getItem('sheet_tracker_data');
+            if (val && Array.isArray(val)) {
+                transactions = val;
+            } else {
+                // Fallback / Data Migration: Check if older localStorage data exists
+                const oldData = localStorage.getItem('sheet_tracker_data');
+                if (oldData) {
+                    transactions = JSON.parse(oldData) || [];
+                    await saveData(); // Migrate to IndexedDB
+                }
+            }
+        } catch (err) {
+            console.error('Error loading data from localForage:', err);
+        }
+        updateUI();
+    }
+
+    // Save Transactions to localForage (IndexedDB)
+    async function saveData() {
+        try {
+            await localforage.setItem('sheet_tracker_data', transactions);
+        } catch (err) {
+            console.error('Error saving data to localForage:', err);
+        }
+    }
 
     // Dark Mode Initialization & Toggle
     function initTheme() {
@@ -700,7 +737,7 @@
         document.getElementById('editId').value = '';
     }
 
-    function handleSave(e) {
+    async function handleSave(e) {
         e.preventDefault();
 
         const usd = parseFloat(document.getElementById('amountUSD').value) || 0;
@@ -735,22 +772,22 @@
             transactions.unshift(newEntry);
         }
 
-        localStorage.setItem('sheet_tracker_data', JSON.stringify(transactions));
+        await saveData();
         updateUI();
         closeModal();
     }
 
     // Direct Delete Function for Trash Button
-    function deleteTransaction(id) {
+    async function deleteTransaction(id) {
         if(confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះមែនទេ?')) {
             transactions = transactions.filter(t => t.id !== id);
-            localStorage.setItem('sheet_tracker_data', JSON.stringify(transactions));
+            await saveData();
             updateUI();
         }
     }
 
     // Clear All Transactions with Confirmation
-    function clearAllTransactions() {
+    async function clearAllTransactions() {
         if(transactions.length === 0) {
             alert('គ្មានប្រតិបត្តិការសម្រាប់លុបទេ');
             return;
@@ -758,6 +795,7 @@
 
         if(confirm('តើអ្នកពិតជាចង់យល់ព្រមលុបប្រតិបត្តិការចំណូលចំណាយទាំងអស់មែនទេ?')) {
             transactions = [];
+            await localforage.removeItem('sheet_tracker_data');
             localStorage.removeItem('sheet_tracker_data');
             updateUI();
         }
@@ -955,7 +993,7 @@
 
     // Initial Load
     initTheme();
-    updateUI();
+    loadData();
 </script>
 
 </body>
