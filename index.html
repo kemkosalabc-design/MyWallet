@@ -1,23 +1,15 @@
-<!DOCTYPE html>
+html_content_v4 = '''<!DOCTYPE html>
 <html lang="km">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>កាបូបខ្ញុំ- MyWallet - កត់ត្រាចំណូលចំណាយ</title>
-    
-    <!-- PWA Requirements -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4F46E5">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="MyWallet">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8552/8552543.png">
-
     <!-- Font Khmer and FontAwesome Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- jsPDF & localForage Libraries -->
+    <!-- jsPDF Library for PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- localForage Library for Persistent IndexedDB Storage -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     
     <style>
@@ -83,8 +75,9 @@
             transition: background-color 0.3s;
         }
 
+        /* Header UI matching design */
         .header {
-            padding: 20px;
+            padding: 20px 20px 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -133,7 +126,55 @@
             background: var(--filter-bg);
             transition: background 0.2s;
         }
+        .header-action:hover {
+            opacity: 0.8;
+        }
 
+        /* Exchange Rate Bar under Header */
+        .exchange-rate-bar {
+            margin: 0 20px 12px 20px;
+            padding: 8px 14px;
+            background: var(--filter-bg);
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        .rate-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .rate-info i {
+            color: var(--primary);
+        }
+
+        .btn-edit-rate {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-edit-rate:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Content & Cards */
         .content {
             padding: 0 20px 100px 20px;
             display: flex;
@@ -167,6 +208,13 @@
             justify-content: center;
         }
 
+        .card-badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
         .card-title {
             font-size: 13px;
             color: var(--text-sub);
@@ -185,17 +233,25 @@
             margin-top: 4px;
         }
 
+        /* Specific Cards Styling */
         .card-income .card-icon { background: var(--income-bg); color: var(--income); }
+        .card-income .card-badge { background: var(--income-bg); color: var(--income); }
         .card-income .card-amount { color: var(--text-main); }
 
         .card-expense .card-icon { background: var(--expense-bg); color: var(--expense); }
+        .card-expense .card-badge { background: var(--expense-bg); color: var(--expense); }
         .card-expense .card-amount { color: var(--text-main); }
 
-        .card-balance { background: var(--primary); color: white; border: none; }
+        .card-balance {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
         .card-balance .card-icon { background: rgba(255,255,255,0.2); color: white; }
         .card-balance .card-title, .card-balance .card-sub-title { color: rgba(255,255,255,0.8); }
         .card-balance .card-amount { color: white; }
 
+        /* Filter Tabs inside Cards */
         .filter-tabs {
             display: flex;
             gap: 4px;
@@ -222,6 +278,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
+        /* Currency Layout */
         .currency-wrap {
             display: flex;
             justify-content: space-between;
@@ -229,12 +286,13 @@
         }
 
         .amount-khr {
-            font-size: 31.2px;
+            font-size: 31.2px; /* 30% larger than 24px card-amount */
             font-weight: 700;
             opacity: 0.95;
             line-height: 1;
         }
 
+        /* Action Buttons */
         .action-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -265,6 +323,7 @@
         .btn-income { background: var(--income); color: #fff; }
         .btn-expense { background: var(--expense); color: #fff; }
 
+        /* Download Section & Clear All */
         .history-header {
             display: flex;
             justify-content: space-between;
@@ -291,6 +350,7 @@
             gap: 6px;
             font-weight: 600;
         }
+        .btn-download:hover { opacity: 0.8; }
 
         .btn-clear-all {
             background: var(--expense-bg);
@@ -306,6 +366,7 @@
             gap: 6px;
         }
 
+        /* Modal / Form Slide-up */
         .modal {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -341,8 +402,17 @@
             margin-bottom: 20px;
         }
 
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+        }
+
         .form-group label span { font-size: 11px; opacity: 0.8; }
 
         .form-control {
@@ -358,7 +428,12 @@
         }
 
         .form-control:focus { border-color: var(--primary); }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
 
         .btn-save {
             width: 100%;
@@ -373,6 +448,7 @@
             margin-top: 10px;
         }
 
+        /* List items */
         .transaction-list {
             margin-top: 10px;
             display: flex;
@@ -381,7 +457,6 @@
             max-height: 250px;
             overflow-y: auto;
         }
-
         .t-item {
             display: flex;
             justify-content: space-between;
@@ -389,19 +464,29 @@
             padding: 12px;
             border-bottom: 1px solid var(--border-color);
         }
-
         .t-info div:first-child { font-weight: 600; font-size: 14px; color: var(--text-main); }
         .t-info div:last-child { font-size: 11px; color: var(--text-sub); }
-        .t-right-group { display: flex; align-items: center; gap: 10px; }
+        
+        .t-right-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .t-amount { font-weight: 700; text-align: right; }
         .t-amount.income { color: var(--income); }
         .t-amount.expense { color: var(--expense); }
-        .t-actions { display: flex; gap: 4px; }
+
+        .t-actions {
+            display: flex;
+            gap: 4px;
+        }
 
         .btn-t-action {
             background: var(--filter-bg);
             border: none;
-            width: 26px; height: 26px;
+            width: 26px;
+            height: 26px;
             border-radius: 6px;
             cursor: pointer;
             display: flex;
@@ -409,7 +494,11 @@
             justify-content: center;
             font-size: 11px;
             color: var(--text-sub);
+            transition: background 0.2s;
         }
+        .btn-t-action:hover { opacity: 0.8; }
+        .btn-t-action.edit:hover { color: var(--primary); }
+        .btn-t-action.delete:hover { color: var(--expense); background: var(--expense-bg); }
     </style>
 </head>
 <body>
@@ -422,12 +511,24 @@
             <div class="brand-title">កាបូបខ្ញុំ- MyWallet</div>
         </div>
         <div class="header-actions">
-            <div class="header-action" id="themeToggleBtn" onclick="toggleTheme()" title="ប្តូរពណ៌ទម្រង់"><i class="fa-solid fa-moon" id="themeIcon"></i></div>
+            <div class="header-action" id="themeToggleBtn" onclick="toggleTheme()" title="ប្តូរពណ៌ទម្រង់ (Dark/Light Mode)"><i class="fa-solid fa-moon" id="themeIcon"></i></div>
         </div>
+    </div>
+
+    <!-- Exchange Rate Bar -->
+    <div class="exchange-rate-bar">
+        <div class="rate-info">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>អត្រាប្តូរប្រាក់៖ 1$ = <span id="displayRateText">4,000</span> ៛</span>
+        </div>
+        <button class="btn-edit-rate" onclick="openRateModal()">
+            <i class="fa-solid fa-pen-to-square"></i> កែប្រែ
+        </button>
     </div>
 
     <!-- Main Content -->
     <div class="content">
+        
         <!-- Total Income Card -->
         <div class="card card-income">
             <div class="card-header">
@@ -501,21 +602,23 @@
             </div>
             <div class="header-actions-group">
                 <button class="btn-clear-all" onclick="clearAllTransactions()">
-                    <i class="fa-solid fa-trash-can"></i> សម្អាត
+                    <i class="fa-solid fa-trash-can"></i> សម្អាតទាំងអស់
                 </button>
                 <button class="btn-download" onclick="downloadPDF()">
-                    <i class="fa-solid fa-file-pdf"></i> PDF
+                    <i class="fa-solid fa-file-pdf"></i> ទាញយកប្រតិបត្តិការ
                 </button>
             </div>
         </div>
 
         <!-- Transaction List -->
-        <div class="transaction-list" id="transaction-list"></div>
+        <div class="transaction-list" id="transaction-list">
+            <!-- Items injected by JS -->
+        </div>
 
     </div>
 </div>
 
-<!-- Modal Form -->
+<!-- Transaction Modal Form -->
 <div class="modal" id="entryModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -553,45 +656,134 @@
     </div>
 </div>
 
+<!-- Exchange Rate Modal Form -->
+<div class="modal" id="rateModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <h3>កែប្រែអត្រាប្តូរប្រាក់</h3>
+                <span style="font-size: 12px; color: var(--text-sub);">Set Exchange Rate (1 USD = ? KHR)</span>
+            </div>
+            <i class="fa-solid fa-xmark" style="font-size: 20px; cursor: pointer;" onclick="closeRateModal()"></i>
+        </div>
+
+        <form onsubmit="handleSaveRate(event)">
+            <div class="form-group">
+                <label>អត្រាប្តូរប្រាក់ (រៀលក្នុង 1 ដុល្លារ) <span>/ Rate in KHR per 1 USD</span></label>
+                <input type="number" id="inputExchangeRate" class="form-control" placeholder="ឧទាហរណ៍៖ 4000, 4100" required min="100">
+            </div>
+
+            <button type="submit" class="btn-save">រក្សាទុកអត្រាប្តូរប្រាក់ / Save Rate</button>
+        </form>
+    </div>
+</div>
+
 <script>
+    // App State
     let transactions = [];
     let currentType = 'income';
 
+    // Dynamic Exchange Rate (Default: 4000 KHR)
+    let exchangeRate = 4000;
+
+    // Filter states ('day', 'week', 'month', 'year', 'all')
     let incomeFilter = 'day';
     let expenseFilter = 'day';
 
-    // Register Service Worker for PWA
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker Registered'))
-                .catch(err => console.log('SW Registration Failed: ', err));
-        });
+    // Configure localForage (IndexedDB Configuration)
+    localforage.config({
+        name: 'MyWalletApp',
+        storeName: 'transactions_db'
+    });
+
+    // Helper function to escape HTML special characters to prevent XSS
+    function escapeHTML(str) {
+        if (!str) return '';
+        return str.replace(/[&<>'"]/g, 
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+        );
     }
 
-    // Configure localForage Database
-    localforage.config({ name: 'MyWalletApp', storeName: 'transactions_db' });
-
+    // Load Transactions & Exchange Rate from localForage / localStorage
     async function loadData() {
         try {
+            // Load Exchange Rate
+            const savedRate = await localforage.getItem('sheet_tracker_rate');
+            if (savedRate && !isNaN(savedRate) && Number(savedRate) > 0) {
+                exchangeRate = Number(savedRate);
+            } else {
+                const oldRate = localStorage.getItem('sheet_tracker_rate');
+                if (oldRate && !isNaN(oldRate) && Number(oldRate) > 0) {
+                    exchangeRate = Number(oldRate);
+                }
+            }
+
+            // Load Transactions
             const val = await localforage.getItem('sheet_tracker_data');
             if (val && Array.isArray(val)) {
                 transactions = val;
+            } else {
+                const oldData = localStorage.getItem('sheet_tracker_data');
+                if (oldData) {
+                    transactions = JSON.parse(oldData) || [];
+                    await saveData(); // Migrate
+                }
             }
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error('Error loading data:', err);
+        }
+        updateRateDisplay();
         updateUI();
     }
 
+    // Save Transactions to localForage
     async function saveData() {
         try {
             await localforage.setItem('sheet_tracker_data', transactions);
-            // Persistent storage request for iOS/Android
-            if (navigator.storage && navigator.storage.persist) {
-                navigator.storage.persist();
-            }
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error('Error saving data:', err);
+        }
     }
 
+    // Save Exchange Rate to localForage & localStorage
+    async function saveExchangeRate(rate) {
+        try {
+            exchangeRate = rate;
+            await localforage.setItem('sheet_tracker_rate', rate);
+            localStorage.setItem('sheet_tracker_rate', rate);
+            updateRateDisplay();
+            updateUI();
+        } catch (err) {
+            console.error('Error saving exchange rate:', err);
+        }
+    }
+
+    function updateRateDisplay() {
+        document.getElementById('displayRateText').innerText = Number(exchangeRate).toLocaleString('en-US');
+    }
+
+    // Rate Modal Logic
+    function openRateModal() {
+        document.getElementById('inputExchangeRate').value = exchangeRate;
+        document.getElementById('rateModal').classList.add('active');
+    }
+
+    function closeRateModal() {
+        document.getElementById('rateModal').classList.remove('active');
+    }
+
+    async function handleSaveRate(e) {
+        e.preventDefault();
+        const newRate = parseFloat(document.getElementById('inputExchangeRate').value);
+        if (newRate && newRate > 0) {
+            await saveExchangeRate(newRate);
+            closeRateModal();
+        } else {
+            alert('សូមបញ្ជូលអត្រាប្តូរប្រាក់ឲ្យបានត្រឹមត្រូវ');
+        }
+    }
+
+    // Dark Mode Initialization & Toggle
     function initTheme() {
         const savedTheme = localStorage.getItem('sheet_tracker_theme') || 'light';
         if (savedTheme === 'dark') {
@@ -617,9 +809,11 @@
         }
     }
 
+    // Format currency
     const formatUSD = (val) => '$' + Number(val).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     const formatKHR = (val) => Number(val).toLocaleString('en-US') + ' ៛';
 
+    // Set Default Datetime to Now (Local Time)
     function setNowDateTime() {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -642,16 +836,48 @@
             title.innerText = 'បញ្ជូលចំណាយ / Add Expense';
             title.style.color = 'var(--expense)';
         }
+
+        document.getElementById('entryModal').classList.add('active');
+    }
+
+    function openEditModal(id) {
+        const t = transactions.find(item => item.id === id);
+        if(!t) return;
+
+        currentType = t.type;
+        document.getElementById('type').value = t.type;
+        document.getElementById('editId').value = t.id;
+        document.getElementById('amountUSD').value = t.usd > 0 ? t.usd : '';
+        document.getElementById('amountKHR').value = t.khr > 0 ? t.khr : '';
+        document.getElementById('description').value = t.desc;
+        
+        if(t.datetime) {
+            document.getElementById('datetime').value = t.datetime;
+        }
+
+        const title = document.getElementById('modalTitle');
+        document.getElementById('saveBtnText').innerText = 'កែសម្រួល / Update';
+
+        if(t.type === 'income') {
+            title.innerText = 'កែសម្រួលចំណូល / Edit Income';
+            title.style.color = 'var(--income)';
+        } else {
+            title.innerText = 'កែសម្រួលចំណាយ / Edit Expense';
+            title.style.color = 'var(--expense)';
+        }
+
         document.getElementById('entryModal').classList.add('active');
     }
 
     function closeModal() {
         document.getElementById('entryModal').classList.remove('active');
         document.getElementById('trackerForm').reset();
+        document.getElementById('editId').value = '';
     }
 
     async function handleSave(e) {
         e.preventDefault();
+
         const usd = parseFloat(document.getElementById('amountUSD').value) || 0;
         const khr = parseFloat(document.getElementById('amountKHR').value) || 0;
         const desc = document.getElementById('description').value;
@@ -689,6 +915,7 @@
         closeModal();
     }
 
+    // Direct Delete Function for Trash Button
     async function deleteTransaction(id) {
         if(confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះមែនទេ?')) {
             transactions = transactions.filter(t => t.id !== id);
@@ -697,11 +924,17 @@
         }
     }
 
+    // Clear All Transactions with Confirmation
     async function clearAllTransactions() {
-        if(transactions.length === 0) return;
-        if(confirm('តើអ្នកពិតជាចង់យល់ព្រមលុបប្រតិបត្តិការទាំងអស់មែនទេ?')) {
+        if(transactions.length === 0) {
+            alert('គ្មានប្រតិបត្តិការសម្រាប់លុបទេ');
+            return;
+        }
+
+        if(confirm('តើអ្នកពិតជាចង់យល់ព្រមលុបប្រតិបត្តិការចំណូលចំណាយទាំងអស់មែនទេ?')) {
             transactions = [];
             await localforage.removeItem('sheet_tracker_data');
+            localStorage.removeItem('sheet_tracker_data');
             updateUI();
         }
     }
@@ -711,8 +944,11 @@
         buttons.forEach(btn => btn.classList.remove('active'));
         event.currentTarget.classList.add('active');
 
-        if (type === 'income') incomeFilter = period;
-        else expenseFilter = period;
+        if (type === 'income') {
+            incomeFilter = period;
+        } else {
+            expenseFilter = period;
+        }
         updateUI();
     }
 
@@ -725,17 +961,21 @@
                    itemDate.getMonth() === now.getMonth() &&
                    itemDate.getDate() === now.getDate();
         } else if (period === 'week') {
-            const firstDayOfWeek = new Date(now);
-            firstDayOfWeek.setDate(now.getDate() - now.getDay());
-            firstDayOfWeek.setHours(0,0,0,0);
-            return itemDate >= firstDayOfWeek;
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            startOfWeek.setHours(0,0,0,0);
+
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+            return itemDate >= startOfWeek && itemDate < endOfWeek;
         } else if (period === 'month') {
             return itemDate.getFullYear() === now.getFullYear() &&
                    itemDate.getMonth() === now.getMonth();
         } else if (period === 'year') {
             return itemDate.getFullYear() === now.getFullYear();
         }
-        return true;
+        return true; // 'all'
     }
 
     function updateUI() {
@@ -765,21 +1005,25 @@
                 }
             }
 
+            // Render List Item
             const dateStr = new Date(t.datetime).toLocaleString('km-KH', { dateStyle: 'short', timeStyle: 'short' });
+            const safeDesc = escapeHTML(t.desc);
+
             const itemHtml = `
                 <div class="t-item">
                     <div class="t-info">
-                        <div>${t.desc}</div>
+                        <div>${safeDesc}</div>
                         <div>${dateStr}</div>
                     </div>
                     <div class="t-right-group">
-                        <div class="t-amount ${t.type}">
+                        <div class="t-amount ${t.type === 'income' ? 'income' : 'expense'}">
                             ${t.type === 'income' ? '+' : '-'}${t.usd > 0 ? formatUSD(t.usd) : ''}
                             ${t.usd > 0 && t.khr > 0 ? '<br>' : ''}
                             ${t.khr > 0 ? formatKHR(t.khr) : ''}
                         </div>
                         <div class="t-actions">
-                            <button class="btn-t-action delete" onclick="deleteTransaction(${t.id})"><i class="fa-solid fa-trash-can"></i></button>
+                            <button class="btn-t-action edit" onclick="openEditModal(${t.id})" title="កែសម្រួល"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-t-action delete" onclick="deleteTransaction(${t.id})" title="លុប"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>
                 </div>
@@ -787,7 +1031,9 @@
             listContainer.innerHTML += itemHtml;
         });
 
+        // Update Filtered Subtitles & Values
         const periodLabels = { 'day': 'Today', 'week': 'This Week', 'month': 'This Month', 'year': 'This Year', 'all': 'All Time' };
+        
         document.getElementById('income-filter-subtitle').innerText = `Total Income (${periodLabels[incomeFilter]})`;
         document.getElementById('total-income-usd').innerText = formatUSD(filteredIncUSD);
         document.getElementById('total-income-khr').innerText = formatKHR(filteredIncKHR);
@@ -796,17 +1042,132 @@
         document.getElementById('total-expense-usd').innerText = formatUSD(filteredExpUSD);
         document.getElementById('total-expense-khr').innerText = formatKHR(filteredExpKHR);
 
-        document.getElementById('balance-usd').innerText = formatUSD(totalIncUSD - totalExpUSD);
-        document.getElementById('balance-khr').innerText = formatKHR(totalIncKHR - totalExpKHR);
+        // Balance Calculation using dynamic exchangeRate
+        let balanceUSD = totalIncUSD - totalExpUSD;
+        let balanceKHR = totalIncKHR - totalExpKHR;
+
+        // 1. Handle USD Deficit (if USD balance is negative)
+        if (balanceUSD < 0) {
+            const deficitUSD = Math.abs(balanceUSD);
+            const deficitInKHR = deficitUSD * exchangeRate;
+            balanceKHR -= deficitInKHR;
+            balanceUSD = 0;
+        }
+
+        // 2. Handle KHR Deficit (if KHR balance is negative, convert KHR deficit to USD)
+        if (balanceKHR < 0) {
+            const deficitKHR = Math.abs(balanceKHR);
+            const deficitInUSD = deficitKHR / exchangeRate;
+            balanceUSD -= deficitInUSD;
+            balanceKHR = 0;
+        }
+
+        document.getElementById('balance-usd').innerText = formatUSD(balanceUSD);
+        document.getElementById('balance-khr').innerText = formatKHR(balanceKHR);
     }
 
+    // Download Data as PDF using jsPDF (Clean English format to prevent encoding errors)
     function downloadPDF() {
-        if(transactions.length === 0) return alert('គ្មានទិន្នន័យ');
+        if(transactions.length === 0) {
+            alert('មិនទាន់មានទិន្នន័យសម្រាប់ទាញយកជា PDF ទេ');
+            return;
+        }
+
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+
+        // Title
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(16);
         doc.text("MyWallet - Transaction Report", 14, 20);
+
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Generated Date: ${new Date().toLocaleString()}`, 14, 28);
+        doc.text(`Exchange Rate Used: 1 USD = ${exchangeRate.toLocaleString()} KHR`, 14, 34);
+
+        let y = 44;
+        doc.setFontSize(11);
+        doc.setFont("Helvetica", "bold");
+        doc.text("Date", 14, y);
+        doc.text("Type", 55, y);
+        doc.text("Description", 85, y);
+        doc.text("Amount", 140, y);
+
+        doc.line(14, y + 2, 196, y + 2);
+        y += 10;
+
+        let totalIncUSD = 0, totalIncKHR = 0;
+        let totalExpUSD = 0, totalExpKHR = 0;
+
+        doc.setFont("Helvetica", "normal");
+        transactions.forEach((t) => {
+            if(t.type === 'income') {
+                totalIncUSD += t.usd;
+                totalIncKHR += t.khr;
+            } else {
+                totalExpUSD += t.usd;
+                totalExpKHR += t.khr;
+            }
+
+            if (y > 260) {
+                doc.addPage();
+                y = 20;
+            }
+
+            const typeText = t.type === 'income' ? 'Income' : 'Expense';
+            const dateStr = new Date(t.datetime).toLocaleString();
+            let amountStr = '';
+            if(t.usd > 0) amountStr += `$${t.usd.toFixed(2)} `;
+            if(t.khr > 0) amountStr += `${t.khr.toLocaleString()} Riels`;
+
+            doc.text(dateStr, 14, y);
+            doc.text(typeText, 55, y);
+            doc.text(t.desc || '', 85, y);
+            doc.text(amountStr, 140, y);
+
+            y += 10;
+        });
+
+        // Summary Section at the bottom
+        y += 5;
+        if (y > 240) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.line(14, y, 196, y);
+        y += 8;
+
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(12);
+        doc.text("Summary Report", 14, y);
+        y += 8;
+
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Total Income: $${totalIncUSD.toFixed(2)} / ${totalIncKHR.toLocaleString()} Riels`, 14, y);
+        y += 6;
+        doc.text(`Total Expenses: $${totalExpUSD.toFixed(2)} / ${totalExpKHR.toLocaleString()} Riels`, 14, y);
+        y += 6;
+
+        let balUSD = totalIncUSD - totalExpUSD;
+        let balKHR = totalIncKHR - totalExpKHR;
+
+        if (balUSD < 0) {
+            const deficitUSD = Math.abs(balUSD);
+            balKHR -= (deficitUSD * exchangeRate);
+            balUSD = 0;
+        }
+
+        if (balKHR < 0) {
+            const deficitKHR = Math.abs(balKHR);
+            balUSD -= (deficitKHR / exchangeRate);
+            balKHR = 0;
+        }
+
+        doc.text(`Net Balance: $${balUSD.toFixed(2)} / ${balKHR.toLocaleString()} Riels`, 14, y);
+
         doc.save(`MyWallet_Report_${new Date().toISOString().slice(0,10)}.pdf`);
     }
 
@@ -817,3 +1178,9 @@
 
 </body>
 </html>
+'''
+
+with open('index-v3.html', 'w', encoding='utf-8') as f:
+    f.write(html_content_v4)
+
+print("Updated HTML file v3 created successfully.")
