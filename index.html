@@ -2,8 +2,20 @@
 <html lang="km">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>កាបូបខ្ញុំ- MyWallet - កត់ត្រាចំណូលចំណាយ</title>
+
+    <!-- PWA Primary Meta Tags -->
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MyWallet">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/893/893081.png">
+
+    <!-- Inline Web App Manifest (Data URI) for standalone PWA installation -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"កាបូបខ្ញុំ - MyWallet","short_name":"MyWallet","description":"កម្មវិធីកត់ត្រាចំណូលចំណាយ","start_url":".","display":"standalone","background_color":"#F8FAFC","theme_color":"#4F46E5","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/893/893081.png","sizes":"512x512","type":"image/png"}]}'>
+
     <!-- Font Khmer and FontAwesome Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -286,7 +298,7 @@
         }
 
         .amount-khr {
-            font-size: 31.2px; /* 30% larger than 24px card-amount */
+            font-size: 31.2px;
             font-weight: 700;
             opacity: 0.95;
             line-height: 1;
@@ -679,6 +691,55 @@
 </div>
 
 <script>
+    // PWA Service Worker Registration using Blob URL for single file convenience
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            const swCode = `
+                const CACHE_NAME = 'mywallet-cache-v1';
+                const urlsToCache = [
+                    './',
+                    'https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap',
+                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+                    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js'
+                ];
+
+                self.addEventListener('install', (e) => {
+                    e.waitUntil(
+                        caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+                    );
+                    self.skipWaiting();
+                });
+
+                self.addEventListener('activate', (e) => {
+                    e.waitUntil(
+                        caches.keys().then((keys) => {
+                            return Promise.all(
+                                keys.map((key) => {
+                                    if (key !== CACHE_NAME) return caches.delete(key);
+                                })
+                            );
+                        })
+                    );
+                    self.clients.claim();
+                });
+
+                self.addEventListener('fetch', (e) => {
+                    e.respondWith(
+                        caches.match(e.request).then((res) => res || fetch(e.request))
+                    );
+                });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(swUrl).then(() => {
+                console.log('PWA Service Worker Registered Successfully');
+            }).catch((err) => {
+                console.log('PWA Service Worker Registration Failed: ', err);
+            });
+        });
+    }
+
     // App State
     let transactions = [];
     let currentType = 'income';
@@ -690,7 +751,7 @@
     let incomeFilter = 'day';
     let expenseFilter = 'day';
 
-    // Configure localForage (IndexedDB Configuration)
+    // Configure localForage (IndexedDB Storage for lifetime persistence on device)
     localforage.config({
         name: 'MyWalletApp',
         storeName: 'transactions_db'
