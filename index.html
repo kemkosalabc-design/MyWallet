@@ -13,7 +13,7 @@
     <meta name="apple-mobile-web-app-title" content="MyWallet">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/893/893081.png">
 
-    <!-- ភ្ជាប់ទៅកាន់ File manifest.json ដាច់ដោយឡែក -->
+    <!-- ភ្ជាប់ទៅកាន់ File manifest.json -->
     <link rel="manifest" href="manifest.json">
 
     <!-- Font Khmer and FontAwesome Icons -->
@@ -691,7 +691,18 @@
 </div>
 
 <script>
-    // ភ្ជាប់ទៅកាន់ File sw.js ដាច់ដោយឡែក
+    // Request Persistent Storage (ការពារ Safari/iOS ពីការ Auto-Delete Storage)
+    if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().then((persistent) => {
+            if (persistent) {
+                console.log("Persistent Storage Granted!");
+            } else {
+                console.log("Storage is temporary and may be cleared under low disk space.");
+            }
+        });
+    }
+
+    // Register Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
@@ -711,7 +722,7 @@
     let incomeFilter = 'day';
     let expenseFilter = 'day';
 
-    // Configure localForage (IndexedDB Configuration)
+    // Configure localForage (IndexedDB Storage Engine)
     localforage.config({
         name: 'MyWalletApp',
         storeName: 'transactions_db'
